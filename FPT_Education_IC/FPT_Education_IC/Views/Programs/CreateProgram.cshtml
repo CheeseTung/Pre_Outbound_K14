@@ -1,0 +1,1101 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Controllers;
+@using System.Collections;
+@{
+}
+
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    var userAccount = ViewBag.UserAccount as UsrAccount;
+    SystemsService systemsService = ViewBag.SystemsService;
+    ArrayList listProgramCategorize = systemsService.GetListProgramCategorize("");
+    CountryService countryService = ViewBag.CountryService;
+    ArrayList listCountry = countryService.getAllCountry();
+    PartnerService partnerService = ViewBag.PartnerService;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Tạo chương trình</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link href="https://unpkg.com/easymde/dist/easymde.min.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="file-plus"></i></div>
+                                        Tạo chương trình mới
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <a class="btn btn-light border-primary text-primary" href="@Url.Action("ListManageProgram", "Programs")">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Danh sách chương trình đã tạo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mb-4">
+                    <!-- Wizard card example with navigation-->
+                    <div class="card">
+                        <div class="card-header border-bottom">
+                            <!-- Wizard navigation-->
+                            <div class="nav nav-pills nav-justified flex-column flex-xl-row nav-wizard" id="cardTab" role="tablist">
+                                <!-- Wizard navigation item 1-->
+                                <a class="nav-item nav-link active" id="wizard1-tab" href="#wizard1" data-bs-toggle="tab" role="tab" aria-controls="wizard1" aria-selected="true">
+                                    <div class="wizard-step-icon">1</div>
+                                    <div class="wizard-step-text">
+                                        <div class="wizard-step-text-name">Thông tin cơ bản</div>
+                                    </div>
+                                </a>
+                                <!-- Wizard navigation item 3-->
+                                <a class="nav-item nav-link" id="wizard2-tab" href="#wizard2" data-bs-toggle="tab" role="tab" aria-controls="wizard2" aria-selected="true">
+                                    <div class="wizard-step-icon">2</div>
+                                    <div class="wizard-step-text">
+                                        <div class="wizard-step-text-name">Mô tả chi tiết</div>
+                                    </div>
+                                </a>
+                                <!-- Wizard navigation item 2-->
+                                <a class="nav-item nav-link" id="wizard3-tab" href="#wizard3" data-bs-toggle="tab" role="tab" aria-controls="wizard3" aria-selected="true">
+                                    <div class="wizard-step-icon">3</div>
+                                    <div class="wizard-step-text">
+                                        <div class="wizard-step-text-name">Thông tin đối tác</div>
+                                    </div>
+                                </a>
+                                <!-- Wizard navigation item 4-->
+                                <a class="nav-item nav-link" id="wizard4-tab" href="#wizard4" data-bs-toggle="tab" role="tab" aria-controls="wizard4" aria-selected="true">
+                                    <div class="wizard-step-icon">4</div>
+                                    <div class="wizard-step-text">
+                                        <div class="wizard-step-text-name">Tạo form đăng ký</div>
+                                    </div>
+                                </a>
+                                <!-- Wizard navigation item 5-->
+                                <a class="nav-item nav-link" id="wizard5-tab" href="#wizard5" onclick="previewProgram()" data-bs-toggle="tab" role="tab" aria-controls="wizard5" aria-selected="true">
+                                    <div class="wizard-step-icon">5</div>
+                                    <div class="wizard-step-text">
+                                        <div class="wizard-step-text-name">Kiểm tra thông tin</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content" id="cardTabContent">
+                                <!-- Wizard tab pane item 1-->
+                                <div class="tab-pane fade show active" id="wizard1" role="tabpanel" aria-labelledby="wizard1-tab">
+                                    <div class="row justify-content-center">
+                                        <div class="col-xxl-6 col-xl-8">
+                                            <h5 class="card-title mb-4">Điền thông tin cơ bản của chương trình</h5>
+                                            
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" id="StudyExchange" type="radio" name="RadioExchange" checked="" value="Study">
+                                                    <label class="form-check-label" for="StudyExchange">CHƯƠNG TRÌNH TRAO ĐỔI HỌC TẬP</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" id="CultureExchange" type="radio" name="RadioExchange" value="Culture">
+                                                    <label class="form-check-label" for="CultureExchange">CHƯƠNG TRÌNH TRAO ĐỔI VĂN HÓA</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" id="OtherProgram" type="radio" name="RadioExchange" value="Other">
+                                                    <label class="form-check-label" for="OtherProgram">CHƯƠNG TRÌNH KHÁC</label>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3" id="showProgramCategorize">
+                                                <label class="small mb-1" for="ProgramCategorize">Chọn phân loại chương trình</label>
+                                                <select class="form-select" id="ProgramCategorize">
+                                                </select>
+                                            </div>
+                                            <div class="mb-3" id="showProgramCountry">
+                                                <label class="small mb-1" for="ProgramCountry">Chọn quốc gia</label>
+                                                <select class="form-select" id="ProgramCountry">
+                                                    <option value="" disabled selected>Chọn quốc gia</option>
+                                                    @if (listCountry != null && listCountry.Count > 0)
+                                                    {
+                                                        foreach(Country ct in listCountry)
+                                                        {
+                                                            <option value="@ct.IsoCode">@ct.Name</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="small mb-1" for="ProgramTitle">Tên chương trình</label>
+                                                <input class="form-control" id="ProgramTitle" type="text" placeholder="Nhập tên của chương trình..." value=""/>
+                                                <small id="ProgramTitleError" class="text-danger d-none"></small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="small mb-1" for="Participants">Đối tượng tham gia</label>
+                                                <input class="form-control" id="Participants" type="text" placeholder="Đối tượng tham gia chương trình..." value="" />
+                                                <small id="ParticipantsError" class="text-danger d-none"></small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="small mb-1" for="FacebookLink">Link facebook chương trình</label>
+                                                <input class="form-control" id="FacebookLink" type="text" placeholder="Link facebook của chương trình nếu có..." value="" />
+                                            </div>
+                                            <div class="row gx-3 mb-3">
+                                                <div class="col-md-6 mb-md-0">
+                                                    <label class="small mb-1" for="StartDate">Ngày bắt đầu</label>
+                                                    <input class="form-control" id="StartDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="col-md-6 mb-0">
+                                                    <label class="small mb-1" for="EndDate">Ngày kết thức</label>
+                                                    <input class="form-control" id="EndDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                    <small id="EndDateError" class="text-danger d-none"></small>
+                                                </div>
+                                            </div>
+                                            <div class="row gx-3 mb-3">
+                                                <div class="col-md-6 mb-md-0">
+                                                    <label class="small mb-1" for="Register_StartDate">Ngày mở đơn đăng ký</label>
+                                                    <input class="form-control" id="Register_StartDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="col-md-6 mb-0">
+                                                    <label class="small mb-1" for="Register_EndDate">Ngày đóng đơn đăng ký</label>
+                                                    <input class="form-control" id="Register_EndDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                    <small id="Register_EndDate_Error" class="text-danger d-none"></small>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="small mb-1" for="PaymentValue">Chi phí tham gia</label>
+                                                <input class="form-control" id="PaymentValue" type="number" placeholder="Chi phí tham gia nếu có..." value="" />
+                                                <small id="PaymentValueError" class="text-danger d-none"></small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="small mb-1" for="PaymentDesc">Chi tiết về chi phí tham gia</label>
+                                                <textarea class="form-control" style="height: 100px;" id="PaymentDesc" value=""></textarea>
+                                            </div>
+                                            <div class="row gx-3 mb-3">
+                                                <div class="col-md-6 mb-md-0">
+                                                    <label class="small mb-1" for="Payment_StartDate">Bắt đầu đóng phí</label>
+                                                    <input class="form-control" id="Payment_StartDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="col-md-6 mb-0">
+                                                    <label class="small mb-1" for="Payment_EndDate">Kết thúc đóng phí</label>
+                                                    <input class="form-control" id="Payment_EndDate" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                    <small id="Payment_EndDate_Error" class="text-danger d-none"></small>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3" id="inputSubject"></div>
+                                            <div class="row gx-3 mb-3">
+                                                <div class="col-md-12 text-end">
+                                                    <button class="btn btn-primary" id="addSubject" onclick="addProgramSubject()">Thêm môn học</button>
+                                                </div>
+                                            </div>
+                                                
+                                            <hr class="my-4" />
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Wizard tab pane item 2-->
+                                <div class="tab-pane fade" id="wizard2" role="tabpanel" aria-labelledby="wizard2-tab">
+                                    <div class="row gx-4 justify-content-center">
+                                        <div class="col-lg-6">
+                                            <form id="questionForm" name="questionForm" method="post" action="@Url.Action("AddNewFAQ", "Systems")">
+                                                <div class="card card-header-actions mb-4 mb-lg-0">
+                                                    <div class="card-header">
+                                                        Mô tả chương trình
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div id="editor" style="min-height: 500px;"></div>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="answerContent" name="answerContent" value="" />
+                                            </form>
+                                        </div>
+                                        <div class="col-lg-5">
+                                            <div class="card card-header-actions">
+                                                <div class="card-header">
+                                                    Tải lên ảnh của chương trình
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">
+                                                        <div class="mb-3">
+                                                            <label class="mb-1 small" for="fileInputImageAdd">Tải ảnh lên</label>
+                                                            <input type="file" class="form-control" id="fileInputImageAdd" accept="image/*">
+                                                        </div>
+                                                        <div class="float-end" id="clearImgAdd"></div>
+                                                        <div id="imagePreviewAdd" class="img-fluid"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="my-4" />
+                                    </div>
+                                </div>
+                                <!-- Wizard tab pane item 3-->
+                                <div class="tab-pane fade" id="wizard3" role="tabpanel" aria-labelledby="wizard3-tab">
+                                    <div class="row justify-content-center">
+                                        <div class="col-xxl-6 col-xl-8">
+                                            <h5 class="card-title mb-4">Thông tin đối tác hợp tác</h5>
+                                            <form>
+                                                <div class="row gx-3 mb-3">
+                                                    <div class="col-md-6 mb-md-0">
+                                                        <label class="small mb-1" for="PartnerCountry">Chọn quốc gia</label>
+                                                        <select class="form-select" id="PartnerCountry">
+                                                            <option value="" disabled selected>Chọn quốc gia</option> 
+                                                            @if (listCountry != null && listCountry.Count > 0)
+                                                            {
+                                                                foreach (Country ct in listCountry)
+                                                                {
+                                                                    <option value="@ct.IsoCode">@ct.Name</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 mb-md-0">
+                                                        <label class="small mb-1" for="PartnerName">Chọn đối tác</label>
+                                                        <select class="form-select" id="PartnerName">
+                                                            
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="row gx-3 mb-3">
+                                                    <div class="col-md-6 mb-0">
+                                                        <label class="small mb-1" for="MaxNumberRegister">Số lượng tối đa sinh viên tham gia</label>
+                                                        <input class="form-control" id="MaxNumberRegister" type="number" placeholder="Nhập số lượng tham gia..." value="" />
+                                                        <small id="MaxNumberRegisterError" class="text-danger d-none"></small>
+                                                    </div>
+                                                    <div class="col-md-6 mb-0">
+                                                        <label class="small mb-1" for="PartnerContact">Chọn liên hệ chính với đối tác</label>
+                                                        <select class="form-select" id="PartnerContact">
+                                                            
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3 mt-3">
+                                                    <button id="btnAddPartner" type="button" class="btn btn-success" onclick="getPartnerValueToList()">Thêm đối tác</button>
+                                                </div>
+                                                <hr class="my-4" />
+                                                <div id="listPartner">
+                                                    
+                                                </div>
+                                                <hr class="my-4" />
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Wizard tab pane item 4-->
+                                <div class="tab-pane fade" id="wizard4" role="tabpanel" aria-labelledby="wizard4-tab">
+                                    <div class="row gx-4 justify-content-center">
+                                        <div class="col-lg-6">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-4">Thông tin đăng ký cơ bản</h5>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Họ và tên</label>
+                                                    <input class="form-control" type="text" placeholder="Nhập họ và tên của bạn..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Mã số sinh viên</label>
+                                                    <input class="form-control" type="text" placeholder="Nhập mã số sinh viên..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Ngày/tháng/năm sinh</label>
+                                                    <input class="form-control" type="date" readonly value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Giới tính theo CCCD</label>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" checked="" name="radioRegist" />
+                                                        <label class="form-check-label" >Nam</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="radioRegist" />
+                                                        <label class="form-check-label">Nữ</label>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Số điện thoại</label>
+                                                    <input class="form-control" type="text" placeholder="Nhập số điện thoại liên lạc..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Email</label>
+                                                    <input class="form-control" type="text" placeholder="example@fpt.edu.vn..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Campus</label>
+                                                    <input class="form-control" type="text" placeholder="Campus của bạn..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Chuyên ngành</label>
+                                                    <input class="form-control" type="text" placeholder="Nhập chuyên ngành của bạn..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Số CCCD</label>
+                                                    <input class="form-control" type="text" placeholder="Nhập số CCCD..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Ngày cấp CCCD</label>
+                                                    <input class="form-control" type="date" readonly value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Số hộ chiếu</label>
+                                                    <input class="form-control" type="text" placeholder="Nhập số hộ chiếu..." readonly value="" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Ngày cấp hộ chiếu</label>
+                                                    <input class="form-control" type="date" readonly value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Ngày hết hạn hộ chiếu</label>
+                                                    <input class="form-control" type="date" readonly value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1">Link Facebook cá nhân</label>
+                                                    <input class="form-control" type="text" placeholder="Nhập link facebook cá nhân..." readonly value="" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-5">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-4">Thông tin đăng ký mở rộng (Nếu có)</h5>
+                                                <div class="mb-3">
+                                                    <label class="small mb-1" for="MoreQuestion">Nhập câu hỏi: </label>
+                                                    <div id="editor2" style="min-height: 200px;"></div>
+                                                </div>
+                                                <div class="mb-3 mt-3">
+                                                    <button id="btnAddMoreQuestion" type="button" class="btn btn-success" onclick="getQuestionValueToList()">Thêm câu hỏi</button>
+                                                </div>
+                                                <hr class="my-4" />
+                                                <div id="listMoreQuestion"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <hr class="my-4" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Wizard tab pane item 5-->
+                                <div class="tab-pane fade" id="wizard5" role="tabpanel" aria-labelledby="wizard5-tab">
+                                    <div class="row justify-content-center">
+                                        <div class="col-xl-12">
+                                            <h5 class="card-title mb-4">Review thông tin chương trình và tạo mới</h5>
+                                            <hr class="my-4" />
+                                            <div class="row">
+                                                <div class="col-xl-12">
+                                                    <!-- Account details card-->
+                                                    <div class="card mb-4">
+                                                        <div class="row card-header align-items-center justify-content-between mx-0">
+                                                            <div class="col-auto">
+                                                                CHI TIẾT CHƯƠNG TRÌNH
+                                                            </div>
+                                                            <div class="col-12 col-xl-auto">
+                                                                <!-- display Exchange type -->
+                                                                <a class="btn btn-light" id="displayProgramCategory">
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="sbp-preview-content">
+                                                                <div class="justify-content-center mb-4">
+                                                                    <!-- display Categorize -->
+                                                                    <h5 class="text-gray-600" id="displayProgramType"></h5>
+                                                                    <!-- display title program -->
+                                                                    <h1 class="page-header-title" id="displayProgramTitle"></h1>
+                                                                </div>
+                                                                <div class="justify-content-center mb-4">
+                                                                    <!-- display image -->
+                                                                    <div id="imageSubmitPreview" class="img-fluid"></div>
+                                                                    <hr class="my-4" />
+                                                                    <!-- display desc -->
+                                                                    <div class="mt-4" id="displayDesc"></div>
+                                                                    <hr class="my-4" />
+                                                                    <!-- displayProgramInfo -->
+                                                                    <div class="row mt-4">
+                                                                        <div class="col-xl-10">
+                                                                            <div class="location">
+                                                                                <strong style="padding-right: 5px;">Đối tượng tham gia:</strong>
+                                                                                <span id="ParticipantsReview"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                <strong style="padding-right: 5px;">Ngày bắt đầu:</strong>
+                                                                                <span id="StartDateReview"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                 <strong style="padding-right: 5px;">Ngày kết thúc:</strong>
+                                                                                <span id="EndDateReview"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                 <strong style="padding-right: 5px;">Ngày mở đơn đăng ký:</strong>
+                                                                                <span id="Register_StartDate_Review"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                 <strong style="padding-right: 5px;">Ngày đóng đơn đăng ký:</strong>
+                                                                                <span id="Register_EndDate_Review"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                <strong style="padding-right: 5px;">Chi phí tham gia:</strong>
+                                                                                <span id="PaymentValueReview"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                <strong style="padding-right: 5px;">Cách đóng phí:</strong>
+                                                                                <span id="PaymentDescReview"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                <strong style="padding-right: 5px;">Bắt đầu đóng phí:</strong>
+                                                                                <span id="Payment_StartDate_Review"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                <strong style="padding-right: 5px;">Kết thúc đóng phí:</strong>
+                                                                                <span id="Payment_EndDate_Review"></span>
+                                                                            </div>
+                                                                            <div class="location">
+                                                                                <strong style="padding-right: 5px;">Link facebook chương trình:</strong>
+                                                                                <a id="FacebookLinkReview" href="" target="_blank"></a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <hr class="my-4" />
+                                                                    <!-- display Subject -->
+                                                                    <div class="row mt-4" id="displaySubjectreview"></div>
+                                                                    <hr class="my-4" />
+                                                                    <!-- display partner -->
+                                                                    <div class="row mt-4" id="displayPartnerreview"></div>
+                                                                    <hr class="my-4" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body justify-content-center">
+                                                                <div class="row justify-content-center">
+                                                                <div class="col-2 col-xl-auto">
+                                                                    <button class="btn btn-lg btn-primary" onclick="CreateNewProgram()">Tạo mới chương trình</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer" , emrSession)
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/add-program.js"></script>
+    <script>
+
+        const partnerCountrySelect = document.getElementById('PartnerCountry');
+        const partnerNameSelect = document.getElementById('PartnerName');
+        const partnerContactSelect = document.getElementById('PartnerContact');
+
+
+        function LoadPartnerByCountry(list) {
+            var pselect = $("#PartnerName");
+            var cselect = $("#PartnerContact");
+            pselect.empty();
+            cselect.empty();
+
+            pselect.append($('<option>', {
+                value: "",
+                text: "Chọn đối tác",
+                disabled: true,
+                selected: true
+            }));
+
+            cselect.append($('<option>', {
+                value: "",
+                text: "Chọn liên hệ",
+                disabled: true,
+                selected: true
+            }));
+
+            $.each(list, function (index, item) {
+                pselect.append($('<option>', {
+                    value: item.partnerId,
+                    text: item.name
+                }));
+            });
+        }
+
+        function LoadContactsByPartner(list) {
+            var cselect = $("#PartnerContact");
+            cselect.empty();
+            cselect.append($('<option>', {
+                value: "",
+                text: "Chọn liên hệ",
+                disabled: true,
+                selected: true
+            }));
+            $.each(list, function (index, item) {
+                cselect.append($('<option>', {
+                    value: item.contactId,
+                    text: item.name
+                }));
+            });
+        }
+
+        partnerCountrySelect.addEventListener('change', function () {
+            const selectedCountry = partnerCountrySelect.value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Programs/GetPartnersByCountry",
+                data: { country: selectedCountry },
+                success: function (data) {
+                    if (data.success) {
+                        LoadPartnerByCountry(data.list);
+                    }
+                }
+            });
+        });
+
+        partnerNameSelect.addEventListener('change', function () {
+            const selectedPartner = partnerNameSelect.value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Programs/GetContactsByPartner",
+                data: { partnerId: selectedPartner },
+                success: function (data) {
+                    if (data.success) {
+                        LoadContactsByPartner(data.list);
+                    }
+                }
+            });
+        });
+
+
+        function validateInput(input) {
+            if (input) {
+                var value = input.value.trim();
+                var errorMessage = '';
+
+                if (value === '') {
+                    errorMessage = 'Vui lòng không bỏ trống các trường thông tin.';
+                }
+
+                // Xử lý kiểm tra điểm pass và điểm max
+                if (input.name === 'passScore' || input.name === 'maxScore') {
+                    var floatValue = parseFloat(value);
+                    var maxScoreInput = input.parentElement.parentElement.querySelector('input[name="maxScore"]');
+                    var maxScoreValue = maxScoreInput.value.trim();
+
+                    if (isNaN(floatValue) || floatValue < 0) {
+                        errorMessage = 'Vui lòng nhập một số lớn hơn bằng 0.';
+                    } else if (input.name === 'passScore' && maxScoreValue !== '' && floatValue > parseFloat(maxScoreValue)) {
+                        errorMessage = 'Điểm điều kiện phải nhỏ hơn hoặc bằng điểm tối đa.';
+                    } else if (input.name === 'maxScore' && maxScoreValue !== '' && floatValue < parseFloat(maxScoreValue)) {
+                        errorMessage = 'Điểm điều kiện phải nhỏ hơn hoặc bằng điểm tối đa.';
+                    }
+                }
+                var index = input.parentElement.parentElement.getAttribute('id');
+                index = index.charAt(index.length - 1);
+                var errorElement = document.querySelector('#subjectError_' + index);
+                if (errorElement) {
+                    errorElement.textContent = errorMessage;
+                    if (errorMessage !== '') {
+                        errorElement.classList.remove('d-none');
+                    } else {
+                        errorElement.classList.add('d-none');
+                    }
+                }
+            }
+        }
+
+
+        var countSubject = 0;
+        function addProgramSubject() {
+            var subjectContainer = document.querySelector('#inputSubject');
+            const divSubject = document.createElement('div');
+            divSubject.setAttribute('id', 'subject_' + countSubject);
+            divSubject.className = 'row gx-3 mt-3';
+            const spanError = document.createElement('small');
+            spanError.setAttribute('id', 'subjectError_' + countSubject);
+            spanError.className = 'text-danger d-none';
+            if (subjectContainer) {
+                divSubject.innerHTML = `
+                    <div class="col-md-3 mb-md-0">
+                        <label class="small mb-1" for="partnerSubject">Môn học đối tác</label>
+                        <input class="form-control" name="partnerSubject" type="text" value="" />
+                    </div>
+                    <div class="col-md-3 mb-0">
+                        <label class="small mb-1" for="conversionSubject">Môn học quy đổi</label>
+                        <input class="form-control" name="conversionSubject" type="text" value="" />
+                    </div>
+                    <div class="col-md-2 mb-md-0">
+                        <label class="small mb-1" for="maxScore">Điểm tối đa</label>
+                        <input class="form-control" name="maxScore" type="number" value="" />
+                    </div>
+                    <div class="col-md-2 mb-0">
+                        <label class="small mb-1" for="passScore">Điểm điều kiện</label>
+                        <input class="form-control" name="passScore" type="number" value="" />
+                    </div>
+                    <div class="col-md-2 mb-0">
+                        <label class="small mb-1" for="removeSubject"></label>
+                        <button class="form-control btn btn-outline-danger" name="removeSubject" onclick="RemoveSubject(${countSubject})">Xóa</button>
+                    </div>
+                `;
+                subjectContainer.appendChild(divSubject);
+                subjectContainer.appendChild(spanError);
+
+                var inputFields = subjectContainer.querySelectorAll('input[name="partnerSubject"], input[name="conversionSubject"], input[name="maxScore"], input[name="passScore"]');
+
+                if (inputFields.length > 0) {
+                    inputFields.forEach(function (input) {
+                        input.addEventListener('blur', function (event) {
+                            validateInput(input);
+                        });
+                    });
+                }
+                var partnerSubjectInputs = document.querySelectorAll('input[name="partnerSubject"]');
+                var conversionSubjectInputs = document.querySelectorAll('input[name="conversionSubject"]');
+                if (partnerSubjectInputs.length > 0) {
+                    var allInputs = Array.from(partnerSubjectInputs).concat(Array.from(conversionSubjectInputs));
+
+                    allInputs.forEach(function (input) {
+                        input.addEventListener('input', function (event) {
+                            var newValue = event.target.value.replace(/[|,]/g, '');
+                            event.target.value = newValue;
+                        });
+                    });
+                }
+
+                countSubject++;
+            }
+        }
+
+        function RemoveSubject(subjectId) {
+            var subjectContainer = document.querySelector('#inputSubject');
+            var divSubject = document.querySelector('#subject_' + subjectId);
+            var subjectError = document.querySelector('#subjectError_' + subjectId);
+            if (subjectContainer && divSubject && subjectError) {
+                subjectContainer.removeChild(divSubject);
+                subjectContainer.removeChild(subjectError);
+            }
+        }
+
+        function previewProgram() {
+
+            // Hiển thị tên chương trình
+            const displayProgramTitle = document.querySelector('#displayProgramTitle');
+            const ProgramTitle = document.querySelector('#ProgramTitle');
+            displayProgramTitle.innerText = ProgramTitle.value;
+
+            // Hiển thị loại chương trình
+            const displayProgramCategory = document.querySelector('#displayProgramCategory');
+            var categorySelectedValue = $('input[name="RadioExchange"]:checked').val();
+            displayProgramCategory.classList.remove('btn-pink', 'btn-orange', 'btn-teal');
+            if (categorySelectedValue == 'Other') {
+                displayProgramCategory.textContent = "Chương trình khác";
+                displayProgramCategory.classList.add('btn-pink');
+            } else if (categorySelectedValue == 'Culture') {
+                
+                displayProgramCategory.textContent = "Chương trình trao đổi văn hóa";
+                displayProgramCategory.classList.add('btn-orange');
+            } else {
+                displayProgramCategory.classList.add('btn-teal');
+                displayProgramCategory.textContent = "Chương trình trao đổi học tập";
+            }
+
+            // Hiển thị phân loại chương trình
+            const displayProgramType = document.querySelector('#displayProgramType');
+            displayProgramType.textContent = $('#ProgramCategorize option:selected').text();
+
+            // Hiển thị ảnh review
+            const imagePreviewAdd = document.getElementById("imagePreviewAdd");
+            const imageSubmitPreview = document.getElementById("imageSubmitPreview");
+
+            var imagePreviewChild = imagePreviewAdd.innerHTML;
+            imageSubmitPreview.innerHTML = imagePreviewChild;
+
+            const previewImg = imageSubmitPreview.querySelector("img");
+            if (previewImg) {
+                previewImg.setAttribute("class", "img-fluid");
+            }
+
+            // Hiển thị mô tả review
+            const descAdd = document.querySelector('#editor .ql-editor');
+            const displayDesc = document.getElementById("displayDesc");
+            var descAddChild = descAdd.innerHTML;
+            displayDesc.innerHTML = descAddChild;
+
+            // Hiển thị thông tin chương trình
+            const ParticipantsAdd = document.querySelector('#Participants');
+            const ParticipantsReview = document.querySelector('#ParticipantsReview');
+            ParticipantsReview.textContent = ParticipantsAdd.value;
+            const FacebookLinkAdd = document.querySelector('#FacebookLink');
+            const FacebookLinkReview = document.querySelector('#FacebookLinkReview');
+            FacebookLinkReview.textContent = FacebookLinkAdd.value;
+            FacebookLinkReview.href = FacebookLinkAdd.value;
+            const StartDateReview = document.querySelector('#StartDateReview');
+            const StartDateAdd = document.querySelector('#StartDate');
+            StartDateReview.textContent = StartDateAdd.value;
+            const EndDateReview = document.querySelector('#EndDateReview');
+            const EndDateAdd = document.querySelector('#EndDate');
+            EndDateReview.textContent = EndDateAdd.value;
+            const Register_StartDate_Review = document.querySelector('#Register_StartDate_Review');
+            const Register_StartDate_Add = document.querySelector('#Register_StartDate');
+            Register_StartDate_Review.textContent = Register_StartDate_Add.value;
+            const Register_EndDate_Review = document.querySelector('#Register_EndDate_Review');
+            const Register_EndDate_Add = document.querySelector('#Register_EndDate');
+            Register_EndDate_Review.textContent = Register_EndDate_Add.value;
+            const PaymentValueReview = document.querySelector('#PaymentValueReview');
+            const PaymentValueAdd = document.querySelector('#PaymentValue');
+            PaymentValueReview.textContent = PaymentValueAdd.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VNĐ";
+            const PaymentDescReview = document.querySelector('#PaymentDescReview');
+            const PaymentDescAdd = document.querySelector('#PaymentDesc');
+            PaymentDescReview.textContent = PaymentDescAdd.value;
+            const Payment_StartDate_Review = document.querySelector('#Payment_StartDate_Review');
+            const Payment_StartDate_Add = document.querySelector('#Payment_StartDate');
+            Payment_StartDate_Review.textContent = Payment_StartDate_Add.value;
+            const Payment_EndDate_Review = document.querySelector('#Payment_EndDate_Review');
+            const Payment_EndDate_Add = document.querySelector('#Payment_EndDate');
+            Payment_EndDate_Review.textContent = Payment_EndDate_Add.value;
+            
+            // Hiển thị subject review
+            if (categorySelectedValue == 'Study') {
+                const displaySubjectreview = document.querySelector('#displaySubjectreview');
+                const conversionSubject = document.getElementsByName('conversionSubject');
+                const partnerSubject = document.getElementsByName('partnerSubject');
+                const maxScore = document.getElementsByName('maxScore');
+                const passScore = document.getElementsByName('passScore');
+                displaySubjectreview.innerHTML = '';
+                if (partnerSubject.length > 0) {
+                    for (var i = 0; i < partnerSubject.length; i++) {
+                        // add column
+                        var divCol = document.createElement("div");
+                        divCol.classList.add('col-xl-3');
+                        displaySubjectreview.appendChild(divCol);
+                        // add title
+                        var tittleStrong = document.createElement("strong");
+                        tittleStrong.textContent = 'Môn học trao đổi ' + [i + 1];
+                        divCol.appendChild(tittleStrong);
+                        var lineBreak = document.createElement("br");
+                        divCol.appendChild(lineBreak);
+                        // add thông tin môn học partner
+                        var createSpan = document.createElement("strong");
+                        createSpan.textContent = 'Môn học đối tác: ';
+                        divCol.appendChild(createSpan);
+                        var partnerName = document.createElement("span");
+                        var value = partnerSubject[i].value;
+                        partnerName.textContent = value;
+                        divCol.appendChild(partnerName);
+                        // add thông tin môn học tương đương
+                        lineBreak = document.createElement("br");
+                        divCol.appendChild(lineBreak);
+                        createSpan = document.createElement("strong");
+                        createSpan.textContent = 'Môn học tương đương: ';
+                        divCol.appendChild(createSpan);
+                        var course = document.createElement("span");
+                        var value = conversionSubject[i].value;
+                        course.textContent = value;
+                        divCol.appendChild(course);
+                        // add thông tin điểm max
+                        lineBreak = document.createElement("br");
+                        divCol.appendChild(lineBreak);
+                        createSpan = document.createElement("strong");
+                        createSpan.textContent = 'Điểm tối đa: ';
+                        divCol.appendChild(createSpan);
+                        var maxMark = document.createElement("span");
+                        var value = maxScore[i].value;
+                        maxMark.textContent = value;
+                        divCol.appendChild(maxMark);
+                        // add thông tin điểm pass
+                        lineBreak = document.createElement("br");
+                        divCol.appendChild(lineBreak);
+                        createSpan = document.createElement("strong");
+                        createSpan.textContent = 'Điểm tối đa: ';
+                        divCol.appendChild(createSpan);
+                        var passMark = document.createElement("span");
+                        var value = passScore[i].value;
+                        passMark.textContent = value;
+                        divCol.appendChild(passMark);
+                    }
+                }
+            }
+
+            // Hiển thị partner review
+            const displayPartnerreview = document.querySelector('#displayPartnerreview');
+            const partnerNameDisp = document.getElementsByName('partnerNameDisp');
+            const partnerContryDisp = document.getElementsByName('partnerContryDisp');
+            const maxNumberRegist = document.getElementsByName('maxNumberRegist');
+            const partnerContactDisp = document.getElementsByName('partnerContactDisp');
+            displayPartnerreview.innerHTML = '';
+            if (partnerNameDisp.length > 0) {
+                for (var i = 0; i < partnerNameDisp.length; i++) {
+                    // add column
+                    var divCol = document.createElement("div");
+                    divCol.classList.add('col-xl-3');
+                    displayPartnerreview.appendChild(divCol);
+                    // add title
+                    var tittleStrong = document.createElement("strong");
+                    tittleStrong.textContent = 'Thông tin đối tác ' + [i+1] ;
+                    divCol.appendChild(tittleStrong);
+                    var lineBreak = document.createElement("br");
+                    divCol.appendChild(lineBreak);
+                    // add thông tin partner
+                    var createSpan = document.createElement("strong");
+                    createSpan.textContent = 'Tên đối tác: ';
+                    divCol.appendChild(createSpan);
+                    var partnerName = document.createElement("span");
+                    var value = partnerNameDisp[i].textContent;
+                    partnerName.textContent = value;
+                    divCol.appendChild(partnerName);
+                    // add thông tin quốc gia
+                    lineBreak = document.createElement("br");
+                    divCol.appendChild(lineBreak);
+                    createSpan = document.createElement("strong");
+                    createSpan.textContent = 'Quốc gia: ';
+                    divCol.appendChild(createSpan);
+                    var countryName = document.createElement("span");
+                    var value = partnerContryDisp[i].textContent;
+                    countryName.textContent = value;
+                    divCol.appendChild(countryName);
+                    // add thông tin liên hệ
+                    lineBreak = document.createElement("br");
+                    divCol.appendChild(lineBreak);
+                    createSpan = document.createElement("strong");
+                    createSpan.textContent = 'Liên hệ chính: ';
+                    divCol.appendChild(createSpan);
+                    var contactMain = document.createElement("span");
+                    var value = partnerContactDisp[i].textContent;
+                    contactMain.textContent = value;
+                    divCol.appendChild(contactMain);
+                    // add số lượng tham gia
+                    lineBreak = document.createElement("br");
+                    divCol.appendChild(lineBreak);
+                    createSpan = document.createElement("strong");
+                    createSpan.textContent = 'Số lượng tham gia: ';
+                    divCol.appendChild(createSpan);
+                    var maxNumber = document.createElement("span");
+                    var value = maxNumberRegist[i].textContent;
+                    maxNumber.textContent = value;
+                    divCol.appendChild(maxNumber);
+                }
+            }
+            
+        }
+
+        function ValidateCreateProgram() {
+            var exchangeValue = $('input[name="RadioExchange"]:checked').val();
+            const programCategorize = $('#ProgramCategorize option:selected').val();
+            const programTitle = $('#ProgramTitle').val();
+            const participants = $('#Participants').val();
+            const facebookLink = $('#FacebookLink').val();
+            const startDate = $('#StartDate').val();
+            const endDate = $('#EndDate').val();
+            const registStDate = $('#Register_StartDate').val();
+            const registEndDate = $('#Register_EndDate').val();
+            const paymentValue = $('#PaymentValue').val();
+            const paymentDesc = $('#PaymentDesc').val();
+            const paymentStDate = $('#Payment_StartDate').val();
+            const paymentEndDate = $('#Payment_EndDate').val();
+            const programDesc = document.querySelector('#editor .ql-editor');
+            const programImg = $('#fileInputImageAdd')[0].files[0];
+            const partnerMaxRegistElements = document.getElementsByName('partnerMaxRegist');
+            var checkValid = false;
+
+            if (!exchangeValue || exchangeValue.trim() === '') {
+                showAlert('Vui lòng chọn loại chương trình', 'warning');
+            } else if (exchangeValue !== 'Other' && (!programCategorize || programCategorize.trim() === '')) {
+                showAlert('Vui lòng chọn phân loại cho chương trình', 'warning');
+            } else if (!programTitle || programTitle.trim() === '') {
+                showAlert('Vui lòng nhập tên chương trình', 'warning');
+            } else if (!participants || participants.trim() === '') {
+                showAlert('Vui lòng nhập đối tượng tham gia chương trình', 'warning');
+            } else if (!startDate || startDate.trim() === '') {
+                showAlert('Vui lòng nhập thời gian bắt đầu chương trình', 'warning');
+            } else if (!endDate || endDate.trim() === '') {
+                showAlert('Vui lòng nhập thời gian kết thúc chương trình', 'warning');
+            } else if (startDate > endDate) {
+                    showAlert('Ngày bắt đầu chương trình phải nhỏ hoặc bằng hơn ngày kết thúc chương trình', 'warning');
+            } else if (!registStDate || registStDate.trim() === '') {
+                showAlert('Vui lòng nhập thời gian mở đăng ký chương trình', 'warning');
+            } else if (!registEndDate || registEndDate.trim() === '') {
+                showAlert('Vui lòng nhập thời gian đóng đăng ký chương trình', 'warning');
+            } else if (registStDate > registEndDate) {
+                    showAlert('Ngày mở đơn đăng ký phải nhỏ hoặc bằng hơn ngày đóng đơn đăng ký', 'warning');
+            } else if (registStDate >= startDate) {
+                showAlert('Ngày đóng đơn đăng ký phải nhỏ hơn ngày bắt đầu chương trình', 'warning');
+            } else if ((paymentValue || paymentValue.trim() !== '') && paymentValue < 0) {
+                    showAlert('Vui lòng kiểm tra lại chi phí tham gia chương trình', 'warning');
+            } else if (paymentValue > 0 && (!paymentStDate || paymentStDate.trim() === '')) {
+                    showAlert('Vui lòng nhập thời gian bắt đầu đóng phí chương trình', 'warning');
+            } else if (paymentValue > 0 && (!paymentEndDate || paymentEndDate.trim() === '')) {
+                    showAlert('Vui lòng nhập thời gian kết thúc đóng phí chương trình', 'warning');
+            } else if (paymentValue > 0 && (paymentStDate > paymentEndDate)) {
+                    showAlert('Ngày bắt đầu đóng phí phải nhỏ hoặc bằng hơn ngày kết thúc đóng phí', 'warning');
+            } else if (!programDesc || programDesc.textContent.trim() === '') {
+                showAlert('Vui lòng nhập mô tả chương trình', 'warning');
+            } else if (!programImg || programImg.length <= 0) {
+                showAlert('Vui lòng tải lên ảnh của chương trình', 'warning');
+            } else if ((exchangeValue == 'Study' || exchangeValue == 'Culture') && partnerMaxRegistElements.length <= 0) {
+                showAlert('Vui lòng chọn đối tác hợp tác với chương trình', 'warning');
+            } else if (paymentValue > 0 && startDate < paymentEndDate) {
+                showAlert('Ngày kết thúc đóng phí phải trước ngày bắt đầu chương trình', 'warning');
+            } else if (paymentValue > 0 && paymentStDate < registEndDate) {
+                showAlert('Ngày đóng đơn đăng ký phải trước ngày đóng phí tham gia', 'warning');
+            } else {
+                checkValid = true; 
+            }
+            return checkValid;
+        }
+
+        function CreateNewProgram() {
+            // check dữ liệu
+            if (!ValidateCreateProgram()) {
+                return;
+            }
+            var exchangeValue = $('input[name="RadioExchange"]:checked').val();
+            let exchangeData = 0;
+            if (exchangeValue == 'Study') {
+                exchangeData = 1;
+            } else if (exchangeValue == 'Culture') {
+                exchangeData = 2;
+            }
+            const programCategorize = $('#ProgramCategorize option:selected').val();
+            let programCountry = null;
+            if (exchangeData == 0) {
+                programCountry = $('#ProgramCountry').val()
+            }
+            const programTitle = $('#ProgramTitle').val();
+            const participants = $('#Participants').val();
+            const facebookLink = $('#FacebookLink').val();
+            const startDate = $('#StartDate').val();
+            const endDate = $('#EndDate').val();
+            const registStDate = $('#Register_StartDate').val();
+            const registEndDate = $('#Register_EndDate').val();
+            const paymentValue = $('#PaymentValue').val();
+            const paymentDesc = $('#PaymentDesc').val();
+            const paymentStDate = $('#Payment_StartDate').val();
+            const paymentEndDate = $('#Payment_EndDate').val();
+            const programDesc = document.querySelector('#editor .ql-editor');
+            const programDescValue = programDesc.innerHTML;
+            const programImg = $('#fileInputImageAdd')[0].files[0];
+            
+            // Lấy tất cả các phần tử partner
+            const partnerMaxRegistElements = document.getElementsByName('partnerMaxRegist');
+            const partnerIdElements = document.getElementsByName('partnerId');
+            const partnerCountryCodeElements = document.getElementsByName('partnerCountryCode');
+            const partnerContactIdElements = document.getElementsByName('partnerContactId');
+
+            // Tạo một mảng để lưu trữ
+            const programPartnerList = [];
+
+            // add list : Đối tác | Quốc gia | Contact | Số lượng tham gia
+            if (partnerIdElements.length > 0) {
+                for (var i = 0; i < partnerIdElements.length; i++) {
+                    var partnerId = partnerIdElements[i].value;
+                    var partnerMaxRegist = partnerMaxRegistElements[i].value;
+                    var partnerContactId = partnerContactIdElements[i].value;
+                    var partnerCountryCode = partnerCountryCodeElements[i].value;
+                    var combinedValue = partnerId + '|' + partnerCountryCode + '|' + partnerContactId + '|' + partnerMaxRegist;
+                    programPartnerList.push(combinedValue);
+                }
+            }
+
+            // lấy phần tử moreQuestion
+            const questionValueElements = document.getElementsByName('questionValue');
+            // Tạo một mảng để lưu trữ
+            const registerQuestionList = [];
+            
+            if (questionValueElements.length > 0) {
+                for (var i = 0; i < questionValueElements.length; i++) {
+                    var registerQuestion = questionValueElements[i].value;
+                    var combinedValue = registerQuestion + '|';
+                    registerQuestionList.push(combinedValue);
+                }
+            }
+            // Tạo một mảng để lưu trữ
+            const programSubjectList = [];
+            if (exchangeValue == 'Study') {
+                // Lấy tất cả các phần tử subject
+                const conversionSubject = document.getElementsByName('conversionSubject');
+                const partnerSubject = document.getElementsByName('partnerSubject');
+                const maxScore = document.getElementsByName('maxScore');
+                const passScore = document.getElementsByName('passScore');
+
+                if (partnerSubject.length > 0) {
+                    for (var i = 0; i < partnerSubject.length; i++) {
+                        var pSubject = partnerSubject[i].value;
+                        var cSubject = conversionSubject[i].value;
+                        var maxValue = maxScore[i].value;
+                        var passValue = passScore[i].value;
+                        var combinedValue = pSubject + '|' + cSubject + '|' + maxValue + '|' + passValue;
+                        programSubjectList.push(combinedValue);
+                    }
+                } else {
+                    showAlert('Vui lòng thêm ít nhất một môn học', 'warning');
+                    return;
+                }
+            }
+
+            // Data create program
+            var formData = new FormData();
+            formData.append("exchangeData", exchangeData);
+            formData.append("programCategorize", programCategorize);
+            formData.append("programCountry", programCountry);
+            formData.append("programTitle", programTitle);
+            formData.append("participants", participants);
+            formData.append("facebookLink", facebookLink);
+            formData.append("startDate", startDate);
+            formData.append("endDate", endDate);
+            formData.append("registStDate", registStDate);
+            formData.append("registEndDate", registEndDate);
+            formData.append("paymentValue", paymentValue);
+            formData.append("paymentDesc", paymentDesc);
+            formData.append("paymentStDate", paymentStDate);
+            formData.append("paymentEndDate", paymentEndDate);
+            formData.append("programDescValue", programDescValue);
+            formData.append("programImg", programImg);
+            formData.append("programPartnerList", programPartnerList);
+            formData.append("registerQuestionList", registerQuestionList);
+            formData.append("programSubjectList", programSubjectList);
+
+            $.ajax({
+                url: "/Programs/CreateNewProgram",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã tạo chương trình thành công', "success");
+                        setTimeout(function () {
+                            window.location.href = "/Programs/ListManageProgram";
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+
+
+        }
+    </script>
+</body>
+</html>

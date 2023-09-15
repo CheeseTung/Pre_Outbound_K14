@@ -1,0 +1,252 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Controllers;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    var userAccount = ViewBag.UserAccount as UsrAccount;
+    var campusName = ViewBag.CampusName;
+    SystemsService systemsService = ViewBag.SystemsService;
+    AccountService accountService = ViewBag.AccountService;
+    ArrayList contactUsList = systemsService.GetContactUsList();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Quản lý cấu hình liên hệ</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="plus-square"></i></div>
+                                        Quản lý liên hệ với chúng tôi
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addContactUsModal">
+                                        <i class="me-1" data-feather="plus"></i>
+                                        Tạo kênh liên hệ mới
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container px-4">
+                    <!-- Account page navigation-->
+                    <nav class="nav nav-borders">
+                        <a class="nav-link ms-0" href="@Url.Action("InterfaceConfiguration", "Systems")">Kênh liên hệ</a>
+                        <a class="nav-link" href="@Url.Action("InterfaceConfiguration", "Systems", new {actionStr = "Banner"})">Cấu hình banner</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <div class="card">
+                        <div class="card-body">
+                            <table id="datatablesSimple">
+                                <thead>
+                                    <tr>
+                                        <th>Kênh liên hệ</th>
+                                        <th>Đường dẫn</th>
+                                        <th>Người cập nhật</th>
+                                        <th>Ngày cập nhật</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>Kênh liên hệ</th>
+                                        <th>Đường dẫn</th>
+                                        <th>Người cập nhật</th>
+                                        <th>Ngày cập nhật</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    @if (contactUsList != null && contactUsList.Count > 0)
+                                    {
+                                        foreach (CommonMaster item in contactUsList)
+                                        {
+                                            <tr>
+                                                <td>@item.MasterName</td>
+                                                <td>@item.Description</td>
+                                                <td>@accountService.getUsrEmailById(item.UpdateUser)</td>
+                                                <td>@item.UpdateDate</td>
+                                                <td>
+                                                    <button class="btn btn-datatable btn-icon text-blue me-2" type="button" data-bs-toggle="modal" onclick="ShowUpdateContactUs('@item.Id', '@item.MasterName', '@item.Description')" data-bs-target="#editContactUsModal"><i data-feather="edit"></i></button>
+                                                    <a class="btn btn-datatable btn-icon text-red" href="@Url.Action("DeleteContactUs", "Systems", new { contactUsID = item.Id })"><i data-feather="trash-2"></i></a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Create categorize modal-->
+                <div class="modal fade" id="addContactUsModal" tabindex="-1" role="dialog" aria-labelledby="addContactUsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addContactUsModalLabel">Tạo kênh liên hệ mới</h5>
+                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-2">
+                                    <label class="mb-1 small" for="contactUsTypeAdd">Tên kênh liên hệ</label>
+                                    <input class="form-control" id="contactUsTypeAdd" type="text" placeholder="Nhập tên kênh liên hệ..." />
+                                </div>
+                                <div class="mb-2">
+                                    <label class="mb-1 small" for="contactUsLinkAdd">Đường dẫn</label>
+                                    <input class="form-control" id="contactUsLinkAdd" type="text" placeholder="Nhập đường dẫn tới kênh liên hệ..." />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Hủy</button>
+                                <button class="btn btn-primary-soft text-primary" type="button" id="addContactUsButton" onclick="AddNewContactUs()">Thêm mới</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Edit categorize modal-->
+                <div class="modal fade" id="editContactUsModal" tabindex="-1" role="dialog" aria-labelledby="editContactUsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editContactUsModalLabel">Chỉnh sửa kênh liên hệ</h5>
+                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="mb-2">
+                                        <label class="mb-1 small" for="contactUsTypeUpdate">Tên phân loại tài liệu</label>
+                                        <input class="form-control" id="contactUsTypeUpdate" type="text" placeholder="Nhập đường dẫn tới kênh liên hệ..." />
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="mb-1 small" for="contactUsLinkUpdate">Đường dẫn</label>
+                                        <input class="form-control" id="contactUsLinkUpdate" type="text" placeholder="Nhập đường dẫn tới kênh liên hệ..." />
+                                    </div>
+                                    <input type="hidden" id="contactUsIDUpdate" name="contactUsIDUpdate" value="">
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Hủy</button>
+                                <button class="btn btn-primary-soft text-primary" type="button" id="updateContactUsButton" onclick="UpdateContactUs()">Chỉnh sửa</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form id="addContactUsForm" method="post" action="@Url.Action("AddContactUs", "Systems")">
+                    <input type="hidden" id="contactUsTypeValue" name="contactUsTypeValue" value="">
+                    <input type="hidden" id="contactUsLinkValue" name="contactUsLinkValue" value="">
+                    <input type="hidden" id="updateUser" name="updateUser" value="@emrSession.userId">
+                    <input type="hidden" id="updateDate" name="updateDate" value="@DateTime.Now">
+                </form>
+                <form id="updateContactUsForm" method="post" action="@Url.Action("UpdateContactUs", "Systems")">
+                    <input type="hidden" id="contactUsID" name="contactUsID" value="">
+                    <input type="hidden" id="contactUsTypeValue" name="contactUsTypeValue" value="">
+                    <input type="hidden" id="contactUsLinkValue" name="contactUsLinkValue" value="">
+                    <input type="hidden" id="updateUser" name="updateUser" value="@emrSession.userId">
+                    <input type="hidden" id="updateDate" name="updateDate" value="@DateTime.Now">
+                </form>
+
+            </main>
+            @Html.Partial("_Footer" , emrSession)
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            $('#addContactUsModal').on('hidden.bs.modal', function (e) {
+                // Xóa các giá trị trong modal
+                $('#contactUsTypeAdd').val('');
+                $('#contactUsLinkAdd').val('');
+            });
+
+            $('#editContactUsModal').on('hidden.bs.modal', function (e) {
+                // Xóa các giá trị trong modal
+                $('#contactUsTypeUpdate').val('');
+                $('#contactUsLinkUpdate').val('');
+            });
+        });
+
+        function AddNewContactUs() {
+            var contactUsTypeAdd = $('#contactUsTypeAdd').val();
+            var contactUsLinkAdd = $('#contactUsLinkAdd').val();
+
+            if (!contactUsTypeAdd.trim()) {
+                alert("Vui lòng nhập tên kênh liên hệ");
+                return;
+            }
+
+            if (!contactUsLinkAdd.trim()) {
+                alert("Vui lòng nhập đường dẫn tới kênh liên hệ");
+                return;
+            }
+
+            var addContactUsForm = document.getElementById('addContactUsForm');
+            with (addContactUsForm) {
+                contactUsTypeValue.value = contactUsTypeAdd;
+                contactUsLinkValue.value = contactUsLinkAdd;
+                submit();
+            }
+        }
+
+        function UpdateContactUs() {
+            var contactUsTypeUpdate = $('#contactUsTypeUpdate').val();
+            var contactUsLinkUpdate = $('#contactUsLinkUpdate').val();
+            var contactUsIDUpdate = $('#contactUsIDUpdate').val();
+
+            if (!contactUsTypeUpdate.trim()) {
+                alert("Vui lòng nhập tên kênh liên hệ");
+                return;
+            }
+
+            if (!contactUsLinkUpdate.trim()) {
+                alert("Vui lòng nhập đường dẫn tới kênh liên hệ");
+                return;
+            }
+
+            var updateContactUsForm = document.getElementById('updateContactUsForm');
+            with (updateContactUsForm) {
+                contactUsID.value = contactUsIDUpdate;
+                contactUsTypeValue.value = contactUsTypeUpdate;
+                contactUsLinkValue.value = contactUsLinkUpdate;
+                submit();
+            }
+
+        }
+
+        function ShowUpdateContactUs(id, name, desc) {
+            document.getElementById('contactUsIDUpdate').value = id;
+            document.getElementById('contactUsTypeUpdate').value = name;
+            document.getElementById('contactUsLinkUpdate').value = desc;
+
+        }
+    </script>
+</body>
+</html>

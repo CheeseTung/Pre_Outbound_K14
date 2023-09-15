@@ -1,0 +1,442 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Controllers;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    var userAccount = ViewBag.UserAccount as UsrAccount;
+    var campusName = ViewBag.CampusName;
+    SystemsService systemsService = ViewBag.SystemsService;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    AccountService accountService = ViewBag.AccountService;
+    ArrayList bannerList = systemsService.GetListBanner();
+    ArrayList programList = programsService.getAllPrograms();
+    
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Quản lý cấu hình banner</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="plus-square"></i></div>
+                                        Quản lý cấu hình banner
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addBannerModal">
+                                        <i class="me-1" data-feather="plus"></i>
+                                        Thêm banner mới
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container px-4 mb-4">
+                    <!-- Account page navigation-->
+                    <nav class="nav nav-borders">
+                        <a class="nav-link ms-0" style="color: #69707a; border-bottom-color: transparent;" href="@Url.Action("InterfaceConfiguration", "Systems")">Kênh liên hệ</a>
+                        <a class="nav-link active" href="@Url.Action("InterfaceConfiguration", "Systems", new {actionStr = "Banner"})">Cấu hình banner</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <div class="card">
+                        <div class="card-body justify-content-center">
+                            <table id="datatablesSimple">
+                                <thead>
+                                    <tr>
+                                        <th>Ảnh banner</th>
+                                        <th>Chương trình</th>
+                                        <th>Người cập nhật</th>
+                                        <th>Ngày cập nhật</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>Ảnh banner</th>
+                                        <th>Chương trình</th>
+                                        <th>Người cập nhật</th>
+                                        <th>Ngày cập nhật</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    @if (bannerList != null && bannerList.Count > 0)
+                                    {
+                                        foreach (CommonMaster item in bannerList)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <img src="@item.MasterName" alt="" style="max-width: 350px; max-height: 350px; object-fit: contain;">
+                                                </td>
+                                                <td>
+                                                    @{
+                                                        if (!string.IsNullOrEmpty(item.Description))
+                                                        {
+                                                            Program programdisp = programsService.getProgramById(int.Parse(item.Description));
+                                                            <a href="@Url.Action("ViewProgramDetails", "Programs", new{programdisp.ProgramId})" target="_blank" >@programdisp.Title</a>
+                                                        }
+                                                    }
+                                                </td>
+                                                <td>@accountService.getUsrEmailById(item.UpdateUser)</td>
+                                                <td>@item.UpdateDate</td>
+                                                <td>
+                                                    <button class="btn btn-datatable btn-icon text-blue me-2" type="button" data-bs-toggle="modal" onclick="ShowUpdateBanner('@item.Id', '@item.MasterType', '@item.MasterName')" data-bs-target="#editBannerModal"><i data-feather="edit"></i></button>
+                                                    <a class="btn btn-datatable btn-icon text-red" onclick="DeleteBanner(@item.Id, '@item.MasterName')"><i data-feather="trash-2"></i></a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Create categorize modal-->
+                <div class="modal fade" id="addBannerModal" tabindex="-1" role="dialog" aria-labelledby="addBannerModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addBannerModalLabel">Thêm banner mới</h5>
+                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-2">
+                                    <label class="mb-1 small" for="bannerProgramAdd">Chọn chương trình</label>
+                                    <select class="form-select" id="bannerProgramAdd" type="text">
+                                        <option value="" selected disabled>Chọn chương trình muốn hiển thị:</option>
+                                        @if (programList != null && programList.Count > 0) {
+                                            foreach (Program prm in programList)
+                                            {
+                                                <option value="@prm.ProgramId">@prm.Title</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="mb-3">
+                                        <label class="mb-1 small" for="fileInputImageAdd">Tải ảnh lên</label>
+                                        <input type="file" class="form-control" id="fileInputImageAdd" accept="image/*">
+                                    </div>
+                                    <div class="float-end" id="clearImgAdd"></div>
+                                    <div id="imagePreviewAdd" class="post-img"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Hủy</button>
+                                <button class="btn btn-primary-soft text-primary" type="button" id="addBannerButton" onclick="AddNewBanner()">Thêm mới</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Edit categorize modal-->
+                <div class="modal fade" id="editBannerModal" tabindex="-1" role="dialog" aria-labelledby="editBannerModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editBannerModalLabel">Chỉnh sửa kênh liên hệ</h5>
+                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="mb-2">
+                                        <label class="mb-1 small" for="bannerProgramUpdate">Chọn chương trình</label>
+                                        <select class="form-select" id="bannerProgramUpdate" type="text">
+                                            <option value="" selected disabled>Chọn chương trình muốn hiển thị:</option>
+                                            @if (programList != null && programList.Count > 0)
+                                            {
+                                                foreach (Program prm in programList)
+                                                {
+                                                    <option value="@prm.ProgramId">@prm.Title</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <div class="mb-3">
+                                            <label class="mb-1 small" for="fileInputImageUpdate">Tải ảnh lên</label>
+                                            <input type="file" class="form-control" id="fileInputImageUpdate" accept="image/*">
+                                        </div>
+                                        <div class="float-end" id="clearImgUpdate"></div>
+                                        <div id="imagePreviewUpdate" class="post-img"></div>
+                                    </div>
+                                    <input type="hidden" id="BannerIDUpdate" name="BannerIDUpdate" value="">
+                                    <input type="hidden" id="OldBannerProgramValue" name="OldBannerProgramValue" value="">
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Hủy</button>
+                                <button class="btn btn-primary-soft text-primary" type="button" id="updateBannerButton" onclick="UpdateBanner()">Chỉnh sửa</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form id="updateBannerForm" method="post" action="@Url.Action("UpdateBanner", "Systems")">
+                    <input type="hidden" id="BannerID" name="BannerID" value="">
+                    <input type="hidden" id="BannerProgramValue" name="BannerProgramValue" value="">
+                    <input type="hidden" id="BannerImageValue" name="BannerImageValue" value="">
+                    <input type="hidden" id="updateUser" name="updateUser" value="@emrSession.userId">
+                    <input type="hidden" id="updateDate" name="updateDate" value="@DateTime.Now">
+                </form>
+
+            </main>
+            @Html.Partial("_Footer" , emrSession)
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            $('#addBannerModal').on('hidden.bs.modal', function (e) {
+                // Xóa các giá trị trong modal
+                $('#bannerProgramAdd').val('');
+                $('#fileInputImageAdd').val('');
+                clearImgPreviewAdd();
+            });
+
+            $('#editBannerModal').on('hidden.bs.modal', function (e) {
+                // Xóa các giá trị trong modal
+                $('#bannerProgramUpdate').val('');
+                $('#fileInputImageUpdate').val('');
+                clearImgPreviewUpdate();
+            });
+        });
+
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+
+        async function validateFile(file) {
+            if (validImageTypes.indexOf(file.type) === -1) {
+                await showAlert("Vui lòng chỉ chọn tệp hình ảnh (jpeg, png, gif, svg hoặc webp).", "warning");
+                return false;
+            }
+            return true;
+        }
+
+        const fileInputImgAdd = document.getElementById('fileInputImageAdd');
+        const imagePreviewAdd = document.getElementById('imagePreviewAdd');
+        const clearImgAdd = document.getElementById('clearImgAdd');
+
+        fileInputImgAdd.addEventListener('change', function () {
+            const file = fileInputImgAdd.files[0];
+
+            if (file) {
+                if (!validateFile(file)) {
+                    // Đặt lại giá trị của input file và xóa xem trước ảnh
+                    fileInputImgAdd.value = '';
+                    clearImgPreviewAdd();
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    clearImgAdd.innerHTML = '';
+                    const previewImg = document.createElement('img');
+                    previewImg.src = e.target.result;
+                    previewImg.className = 'img-thumbnail';
+                    imagePreviewAdd.innerHTML = '';
+                    imagePreviewAdd.appendChild(previewImg);
+                    const clearIcon = document.createElement('i');
+                    clearIcon.className = 'post-add-icon';
+                    clearIcon.setAttribute('data-feather', 'x');
+                    clearImgAdd.onclick = clearImgPreviewAdd; // Sử dụng hàm clearImgPreview để xóa ảnh
+                    clearImgAdd.appendChild(clearIcon);
+                    feather.replace(); // Render Feather icons
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+
+        const fileInputImgUpdate = document.getElementById('fileInputImageUpdate');
+        const imagePreviewUpdate = document.getElementById('imagePreviewUpdate');
+        const clearImgUpdate = document.getElementById('clearImgUpdate');
+
+        fileInputImgUpdate.addEventListener('change', function () {
+            const file = fileInputImgUpdate.files[0];
+
+            if (file) {
+                if (!validateFile(file)) {
+                    // Đặt lại giá trị của input file và xóa xem trước ảnh
+                    fileInputImgUpdate.value = '';
+                    clearImgPreviewUpdate();
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    clearImgUpdate.innerHTML = '';
+                    const previewImg = document.createElement('img');
+                    previewImg.src = e.target.result;
+                    previewImg.className = 'img-thumbnail';
+                    imagePreviewUpdate.innerHTML = '';
+                    imagePreviewUpdate.appendChild(previewImg);
+                    const clearIcon = document.createElement('i');
+                    clearIcon.className = 'post-add-icon';
+                    clearIcon.setAttribute('data-feather', 'x');
+                    clearImgUpdate.onclick = clearImgPreviewUpdate; // Sử dụng hàm clearImgPreview để xóa ảnh
+                    clearImgUpdate.appendChild(clearIcon);
+                    feather.replace(); // Render Feather icons
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearImgPreviewAdd() {
+            imagePreviewAdd.innerHTML = ''; // Xóa ảnh hoặc file xem trước
+            fileInputImgAdd.value = ''; // Đặt lại giá trị của input file
+            clearImgAdd.innerHTML = '';
+        }
+
+        function clearImgPreviewUpdate() {
+            imagePreviewUpdate.innerHTML = ''; // Xóa ảnh hoặc file xem trước
+            fileInputImgUpdate.value = ''; // Đặt lại giá trị của input file
+            clearImgUpdate.innerHTML = '';
+        }
+
+        async function AddNewBanner() {
+            var bannerProgramAdd = $('#bannerProgramAdd option:selected').val();
+            var fileInputImageAdd = $('#fileInputImageAdd')[0].files[0];
+
+            if (!bannerProgramAdd) {
+                await showAlert("Vui lòng chọn chương trình muốn hiển thị.", "warning");
+
+                return;
+            }
+
+            if (!fileInputImageAdd) {
+                await showAlert("Vui lòng tải ảnh banner lên.", "warning");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("BannerProgramValue", bannerProgramAdd);
+            formData.append("BannerImageValue", fileInputImageAdd);
+
+
+            $.ajax({
+                url: "/Systems/AddBanner",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    await showAlert("Thêm mới thành công!", "success");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                }
+            });
+        }
+
+        async function UpdateBanner() {
+            var bannerProgramUpdate = $('#bannerProgramUpdate option:selected').val();
+            var fileInputImageUpdate = $('#fileInputImageUpdate')[0].files[0];
+            var BannerIDUpdate = $('#BannerIDUpdate').val();
+            var OldBannerProgramValue = $('#OldBannerProgramValue').val();
+
+            if (!bannerProgramUpdate) {
+                await showAlert("Vui chọn chương trình muốn hiển thị.", "warning");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("BannerProgramValue", bannerProgramUpdate);
+            formData.append("BannerImageValue", fileInputImageUpdate);
+            formData.append("BannerIDUpdate", BannerIDUpdate);
+            formData.append("OldBannerProgramValue", OldBannerProgramValue);
+
+
+            $.ajax({
+                url: "/Systems/UpdateBanner",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    await showAlert("Cập nhật thành công!", "success");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                }
+            });
+
+        }
+
+        async function DeleteBanner(bannerID, OldBannerProgramValue) {
+            if (!bannerProgramUpdate) {
+                await showAlert("Không thể xóa vui lòng kiểm tra lại.", "error");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("BannerID", bannerID);
+            formData.append("OldBannerProgramValue", OldBannerProgramValue);
+
+
+            $.ajax({
+                url: "/Systems/DeleteBanner",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    await showAlert("Đã xóa thành công!", "success");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                }
+            });
+
+        }
+
+        function ShowUpdateBanner(id, program, oldValue) {
+            document.getElementById('BannerIDUpdate').value = id;
+            document.getElementById('bannerProgramUpdate').value = program;
+            document.getElementById('OldBannerProgramValue').value = oldValue;
+        }
+    </script>
+</body>
+</html>

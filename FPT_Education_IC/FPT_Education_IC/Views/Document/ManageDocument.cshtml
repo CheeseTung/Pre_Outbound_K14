@@ -1,0 +1,163 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.ViewModels;
+@using FPT_Education_IC.Service;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    SystemsService systemsService = ViewBag.SystemsService;
+    
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Thêm tài liệu</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"crossorigin="anonymous"></script>
+</head>
+
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+    <main>
+        <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                <div class="page-header-content">
+                    <div class="row align-items-center justify-content-between pt-3">
+                        <div class="col-auto mb-3">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="file"></i></div>
+                                Quản lý tài liệu
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container-fluid px-4 mt-4">
+            <nav class="nav nav-borders">
+                <a class="nav-link ms-0" href="@Url.Action("AddDocument", "Document")">Thêm mới tài liệu</a>
+                <a class="nav-link" href="@Url.Action("ManageDocument", "Document")">Danh sách tài liệu</a>
+                <a class="nav-link" href="@Url.Action("RequestDocument", "Document")">Tài liệu chờ phê duyệt</a>
+            </nav>
+            <hr class="mt-0 mb-4" />
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-end">
+                    <a class="btn btn-outline-primary border-primary me-3" href="@Url.Action("AddDocument", "Document")">Thêm tài liệu mới</a>
+                </div>
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên tài liệu</th>
+                                <th>Tên đối tác</th>
+                                <th>Chương trình</th>
+                                <th>Loại tài liệu</th>
+                                <th>Ngày bắt đầu </th>
+                                <th>Ngày kết thúc</th>
+                                <th>Trạng thái</th>
+                                <th>Tùy chọn</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên tài liệu</th>
+                                <th>Tên đối tác</th>
+                                <th>Chương trình</th>
+                                <th>Loại tài liệu</th>
+                                <th>Ngày bắt đầu </th>
+                                <th>Ngày kết thúc</th>
+                                <th>Trạng thái</th>
+                                <th>Tùy chọn</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            @{
+                                int count = 1;
+                                foreach (DocumentModel item in ViewBag.listDoc) {
+                                    if (item.Status == 1)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @count
+                                            </td>
+                                            <td>@item.Docname</td>
+                                            <td>@item.Partname</td>
+                                            <td>@item.Programname</td>
+                                            <td>@item.Type</td>
+                                            <td>@item.Startdate.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                @if (item.Enddate == null || !item.Enddate.HasValue)
+                                                {
+                                                    <span>Unknow</span>
+                                                }
+                                                else
+                                                {
+
+                                                    if (item.Enddate.Value.AddMonths(-2) <= DateTime.Now)
+                                                    {
+                                                         <span class="text-danger" title="Sắp hết hạn trong 2 tháng tới">@item.Enddate.Value.ToString("dd/MM/yyyy")<i class="ms-1 text-orange" data-feather="alert-triangle"></i></span>
+                                                    }
+                                                    else if (item.Enddate.Value.AddMonths(-1) <= DateTime.Now)
+                                                    {
+                                                        <span class="text-danger" title="Sắp hết hạn trong 1 tháng tới">@item.Enddate.Value.ToString("dd/MM/yyyy")<i class="ms-1 text-danger" data-feather="alert-triangle"></i></span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@item.Enddate.Value.ToString("dd/MM/yyyy")</span>
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.Status == 1)
+                                                {
+                                                    <span class="badge bg-success">Đã phê duyệt</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-datatable btn-icon text-green" href="@item.filePath" target="_blank">
+                                                    <i data-feather="download"></i>
+                                                </a>
+                                                <a class="btn btn-datatable btn-icon text-primary" href="@Url.Action("UpdateDocument", "Document", new {documentId = item.documentId})"><i data-feather="edit"></i></a>
+                                                <a class="btn btn-datatable btn-icon text-red" href="@Url.Action("DeleteDocument", "Document", new {documentId = item.documentId})"><i data-feather="trash-2"></i></a>
+                                            </td>
+                                        </tr>
+                                        count++;
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+            crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script>
+        function downloadDocument(url) {
+            window.location.href = url;
+        }
+    </script>
+</body>
+
+</html>

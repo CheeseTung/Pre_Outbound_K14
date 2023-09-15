@@ -1,0 +1,223 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    ViewCountProgram countProgram = programsService.CountProgramList();
+    ArrayList listDashboard = programsService.GetDashBoardProgram();
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Số liệu thống kê</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="activity"></i></div>
+                                        Số liệu thống kê
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4">
+                    <div class="row">
+                        <div class="col-xl-4 mb-4">
+                            <!-- Dashboard example card 1-->
+                            <div class="card lift h-100">
+                                <div class="card-body d-flex justify-content-center flex-column">
+                                    <div class="text-center align-items-center justify-content-between">
+                                        <div class="me-3">
+                                            <span class="text-xl text-primary mb-3">
+                                            @(countProgram != null && countProgram.NumberProgram > 0 ? countProgram.NumberProgram : 0)
+                                            </span>
+                                            <h5>Số lượng chương trình đã tổ chức</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 mb-4">
+                            <!-- Dashboard example card 1-->
+                            <div class="card lift h-100">
+                                <div class="card-body d-flex justify-content-center flex-column">
+                                    <div class="text-center align-items-center justify-content-between">
+                                        <div class="me-3">
+                                            <span class="text-xl text-success mb-3">
+                                            @(countProgram != null && countProgram.StartProgram > 0 ? countProgram.StartProgram : 0)
+                                            </span>
+                                            <h5>Số lượng chương trình đang diễn ra</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 mb-4">
+                            <!-- Dashboard example card 1-->
+                            <div class="card lift h-100">
+                                <div class="card-body d-flex justify-content-center flex-column">
+                                    <div class="text-center align-items-center justify-content-between">
+                                        <div class="me-3">
+                                            <span class="text-xl text-danger mb-3">
+                                            @(countProgram != null && countProgram.CloseProgram > 0 ? countProgram.CloseProgram : 0)
+                                            </span>
+                                            <h5>Số lượng chương trình đã kết thúc</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xxl-12">
+                            <div class="card mb-4">
+                                <div class="row card-header align-items-center justify-content-between">
+                                    <div class="col-auto">
+                                        Danh sách các chương trình triển khai
+                                    </div>
+                                    <div class="col-12 col-xl-auto">
+                                        <a class="btn btn-outline-success" href="">Xuất dữ liệu</a>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive table-billing-history">
+                                        <table id="datatablesSimple">
+                                            <thead>
+                                                <tr>
+                                                    <th>STT</th>
+                                                    <th>Nhóm chương trình</th>
+                                                    <th>Tên chương trình</th>
+                                                    <th>SL đăng ký</th>
+                                                    <th>SL tham gia</th>
+                                                    <th>Thời gian tổ chức</th>
+                                                    <th>Quốc gia</th>
+                                                    <th>Đối tác</th>
+                                                    <th>Trạng thái</th>
+                                                </tr>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>STT</th>
+                                                    <th>Nhóm chương trình</th>
+                                                    <th>Tên chương trình</th>
+                                                    <th>SL đăng ký</th>
+                                                    <th>SL tham gia</th>
+                                                    <th>Thời gian tổ chức</th>
+                                                    <th>Quốc gia</th>
+                                                    <th>Đối tác</th>
+                                                    <th>Trạng thái</th>
+                                                </tr>
+                                            </tfoot>
+                                            <tbody>
+                                                @if (listDashboard != null && listDashboard.Count > 0)
+                                                {
+                                                    foreach (ViewDashBoard view in listDashboard)
+                                                    {
+                                                        <tr>
+                                                            <td>@view.count</td>
+                                                            <td>@(!string.IsNullOrEmpty(view.programCategory) ? view.programCategory : "OTHER")</td>
+                                                            <td>
+                                                                <a class="text-primary" href="@Url.Action("ViewProgramDetails", "Programs", new{programId = view.programId})">@view.programName</a>
+                                                            </td>
+                                                            <td>@view.numberRegister</td>
+                                                            <td>@view.numberAccept</td>
+                                                            <td>@(view.startDate.ToString("dd/MM/yyyy") + " - " + view.endDate.ToString("dd/MM/yyyy"))</td>
+                                                            <td>
+                                                                @if(view.country.Length > 0)
+                                                                {
+                                                                    string countryName = "";
+                                                                    @for(int i = 0; i < view.country.Length; i++)
+                                                                    {
+                                                                        countryName += view.country[i];
+                                                                        if (i < view.country.Length - 1)
+                                                                        {
+                                                                            countryName += "</br>";
+                                                                        }
+                                                                    }
+                                                                    <span>@Html.Raw(countryName)</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (view.partner.Length > 0)
+                                                                {
+                                                                    string partnerName = "";
+                                                                    @for (int i = 0; i < view.partner.Length; i++)
+                                                                    {
+                                                                        partnerName += view.partner[i];
+                                                                        if (i < view.partner.Length - 1)
+                                                                        {
+                                                                            partnerName += "</br>";
+                                                                        }
+                                                                    }
+                                                                    <span>@Html.Raw(partnerName)</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (view.status == StaticsData.START_STATUS)
+                                                                {
+                                                                    <span class="badge bg-secondary">Mở đăng ký</span>
+                                                                }
+                                                                else if (view.status == StaticsData.PROCESS_STATUS)
+                                                                {
+                                                                    <span class="badge bg-orange">Cập nhật hồ sơ</span>
+                                                                }
+                                                                else if (view.status == StaticsData.HAPPEN_STATUS)
+                                                                {
+                                                                    <span class="badge bg-success">Đang diễn ra</span>
+                                                                }
+                                                                else if (view.status == StaticsData.CLOSE_STATUS)
+                                                                {
+                                                                    <span class="badge bg-dark">Đã kết thúc</span>
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="/assets/demo/chart-area-demo.js"></script>
+    <script src="/assets/demo/chart-pie-demo.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+</body>
+</html>

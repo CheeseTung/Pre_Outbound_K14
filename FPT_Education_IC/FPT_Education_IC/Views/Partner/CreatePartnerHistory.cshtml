@@ -1,0 +1,313 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    int partnerID = ViewBag.PartnerId;
+    PartnerService partnerService = ViewBag.PartnerService;
+    Partner partner = partnerService.getPartnerProfile(partnerID);
+    AccountService accountService = ViewBag.AccountService;
+    ManagementService managementService = ViewBag.ManagementService;
+    UsrAccount usrAcc = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listAccManage = managementService.getAllUsrAccountManage(usrAcc.UserId);
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Tạo bài viết</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="file-plus"></i></div>
+                                        Tạo bài viết mới
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <a class="btn btn-outline-primary" href="@Url.Action("PartnerHistory", "Partner", new {partnerId = partner.PartnerId})">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Lịch sử hợp tác
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mb-3">
+                    <div class="row gx-4 justify-content-center">
+                        <div class="col-lg-10">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    Thông tin chung
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="mb-1">Tiêu đề hợp tác</label>
+                                        <input class="form-control" id="titleHistory" name="titleHistory" type="text" placeholder="Nhập tiêu đề hợp tác" value="">
+                                    </div>
+                                    <div class="row gx-3">
+                                        <div class="mb-3 col-md-6">
+                                            <label for="" class="mb-1">Người phụ trách</label>
+                                            <select class="form-select" name="userId" id="userId">
+                                                <option disabled="" selected="" value="">Chọn người phụ trách: </option>
+                                                @if (listAccManage != null && listAccManage.Count > 0)
+                                                {
+                                                    foreach (UsrAccount usr in listAccManage)
+                                                    {
+                                                        <option value="@usr.UserId">@usr.UserName</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="mb-3 col-md-3">
+                                            <label class="mb-1">Ngày bắt đầu</label>
+                                            <input class="form-control" name="startdate" id="startdate" type="date" value="">
+                                        </div>
+                                        <div class="mb-3 col-md-3">
+                                            <label for="" class="mb-1">Ngày kết thúc</label>
+                                            <input class="form-control" name="enddate" id="enddate" type="date" value="">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card card-header-actions mb-4">
+                                <div class="card-header">
+                                    Nội dung bài viết
+                                </div>
+                                <div class="card-body">
+                                    <div id="editor" style="min-height: 350px;"></div>
+                                </div>
+                            </div>
+                            <div class="card card-header-actions mb-4">
+                                <div class="card-header">
+                                    Tùy chọn bài viết
+                                    <i class="text-muted" data-feather="info" data-bs-toggle="tooltip" data-bs-placement="left" title="Ảnh và tệp sẽ nằm ở cuối bài viết. Loại file tải lên là PDF hoặc Microsoft office file"></i>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="fileInputDoc" class="form-label"><i class="post-add-icon" data-feather="file-plus"></i>&nbspThêm file vào bài viết:</label>
+                                        <input type="file" class="form-control" id="fileInputDoc" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+                                    </div>
+                                    <div class="float-end" id="clearDoc"></div>
+                                    <div id="fileLink" class="mt-3"></div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="images" class="form-label"><i class="post-add-icon" data-feather="camera"></i>&nbspThêm ảnh vào bài viết:</label>
+                                        <input type="file" name="images" multiple class="form-control" id="imageInput">
+                                    </div>
+                                    <div class="form-group" id="imagePreview" style="display: none;">
+                                        <label>Xem trước ảnh:</label>
+                                        <div id="previewImages" class="row"></div>
+                                    </div>
+                                    <div id="errorMessage" class="mt-2 text-danger"></div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="ClearImage()">Xóa</button>
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="text-center"><button class="fw-500 btn btn-lg btn-outline-primary" onclick="CreateNewHistory('@partner.PartnerId')">Tạo lịch sử hợp tác</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+             @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        var quill = new Quill('#editor', {
+            theme: 'snow'
+        });
+        document.querySelector('form').addEventListener('submit', function (event) {
+            var editorContent = document.querySelector('.ql-editor').innerHTML;
+            event.preventDefault();
+        });
+
+        $(document).ready(function () {
+            $("#imageInput").change(function () {
+                var input = this;
+                var previewDiv = $("#imagePreview");
+                var previewImagesDiv = $("#previewImages");
+                var errorMessageDiv = $("#errorMessage");
+
+                previewImagesDiv.empty(); // Xóa các ảnh xem trước cũ
+                errorMessageDiv.text(""); // Xóa thông báo lỗi trước
+
+                if (input.files && input.files.length > 0) {
+                    previewDiv.show();
+
+                    for (var i = 0; i < input.files.length; i++) {
+                        var file = input.files[i];
+
+                        // Kiểm tra định dạng tệp tin
+                        if (file.type !== "image/jpeg" && file.type !== "image/png") {
+                            errorMessageDiv.text("Chỉ chấp nhận ảnh JPG hoặc PNG.");
+                            return;
+                        }
+
+                        // Kiểm tra kích thước tệp tin
+                        if (file.size > 2 * 1024 * 1024) {
+                            errorMessageDiv.text("Kích thước ảnh không được vượt quá 2MB.");
+                            return;
+                        }
+
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            var image = $("<img>").attr("src", e.target.result).addClass("col-md-3 img-fluid mt-2");
+                            image.attr("style", "max-width: 150px; max-height: 150px; object-fit:cover; margin-right: 10px;");
+                            previewImagesDiv.append(image);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                } else {
+                    previewDiv.hide();
+                }
+            });
+        });
+
+        const fileInputDoc = document.getElementById('fileInputDoc');
+        const fileLink = document.getElementById('fileLink');
+        const clearDoc = document.getElementById('clearDoc');
+
+        fileInputDoc.addEventListener('change', function () {
+            const file = fileInputDoc.files[0];
+
+            if (file) {
+                clearDoc.innerHTML = '';
+                const fileURL = URL.createObjectURL(file);
+                const link = document.createElement('a');
+                link.href = fileURL;
+                link.target = '_blank'; // Open in a new tab
+                link.innerText = 'Tải hoặc xem file';
+                fileLink.innerHTML = '';
+                fileLink.appendChild(link);
+                const clearIcon = document.createElement('i');
+                clearIcon.className = 'post-add-icon';
+                clearIcon.setAttribute('data-feather', 'x');
+                clearDoc.onclick = clearDocPreview; // Sử dụng hàm clearDocPreview để xóa file
+                clearDoc.appendChild(clearIcon);
+                feather.replace(); // Render Feather icons
+            }
+        });
+
+        function clearDocPreview() {
+            fileLink.innerHTML = ''; // Xóa file xem trước
+            fileInputDoc.value = ''; // Đặt lại giá trị của input file
+            clearDoc.innerHTML = '';
+        }
+
+        function ClearImage() {
+            $("#previewImages").empty();
+            $("#imageInput").val(null);
+        }
+
+        function CreateNewHistory(partnerId) {
+
+            const historyTitle = document.getElementById('titleHistory');
+            const postContent = document.querySelector('#editor .ql-editor');
+            const userId = document.getElementById('userId');
+            const startdate = document.getElementById('startdate');
+            const enddate = document.getElementById('enddate');
+
+            if (!historyTitle || historyTitle.value.trim() === '') {
+                showAlert('Vui lòng nhập tiêu đề bài viết', 'warning');
+                return;
+            }
+
+            if (!postContent || postContent.textContent.trim() === '') {
+                showAlert('Vui lòng nhập nội dung bài viết', 'warning');
+                return;
+            }
+
+            if (!userId || userId.value.trim() == '') {
+                showAlert('Vui lòng chọn người phụ trách', 'warning');
+                return;
+            }
+
+            if (!startdate || startdate.value.trim() == '') {
+                showAlert('Vui lòng chọn ngày bắt đầu', 'warning');
+                return;
+            }
+
+            if (!enddate || enddate.value.trim() == '') {
+                showAlert('Vui lòng chọn ngày kết thúc', 'warning');
+                return;
+            }
+
+            if (enddate.value < startdate.value) {
+                showAlert('Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc', 'warning');
+                return;
+            }
+            var docAdd = $('#fileInputDoc')[0].files[0];
+
+            var formData = new FormData();
+            formData.append('partnerId', partnerId);
+            formData.append('historyTitle', historyTitle.value);
+            formData.append('postContent', postContent.innerHTML);
+            formData.append('userId', userId.value);
+            formData.append('startdate', startdate.value);
+            formData.append('enddate', enddate.value);
+            if (docAdd) {
+                formData.append('docAdd', docAdd);
+            }
+            var imageFile = $("#imageInput")[0].files;
+            if (imageFile) {
+                for (var i = 0; i < imageFile.length; i++) {
+                    formData.append("images", imageFile[i]);
+                }
+            }
+
+            $.ajax({
+                url: "/Partner/DoAddPartnerHistory",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    await showAlert("Đã thêm lịch sử hợp tác thành công", "success");
+                    setTimeout(function () {
+                        window.location.href = "/Partner/PartnerHistory?partnerId=" + partnerId;
+                    }, 2000);
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2000);
+                }
+            });
+
+        }
+    </script>
+</body>
+</html>

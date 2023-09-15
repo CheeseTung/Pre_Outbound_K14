@@ -1,0 +1,459 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    int programId = -1;
+    if (ViewBag.ProgramId != null) programId = ViewBag.ProgramId;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    Program program = programsService.getProgramById(programId);
+    RegisterService registerService = ViewBag.RegisterService;
+    CampusService campusService = ViewBag.CampusService;
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAccount = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+    ArrayList listAllRegister = registerService.GetAllProgramRegister(program.ProgramId);
+    if (listPartnerProgram == null || listPartnerProgram.Count <= 0)
+    {
+        listAllRegister = registerService.GetAllProgramNonePartnerRegister(program.ProgramId);
+    }
+    ArrayList listProgramStudyExchange = programsService.GetAllProgramStudyExchange(program.ProgramId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Quản lý điểm sinh viên</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="text-primary">
+                                        @program.Title
+                                    </h1>
+                                </div>
+                                <div class="col-auto mb-3">
+                                    <a class="btn btn-outline-primary" href="@Url.Action("ListManageProgram", "Programs")">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Danh sách chương trình
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @{
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày bắt đầu: </strong><span>@program.StartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày kết thúc: </strong><span>@program.EndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày mở đăng ký: </strong><span>@program.RegisterStartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày đóng đăng ký: </strong><span>@program.RegisterEndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (listProgramStudyExchange != null && listProgramStudyExchange.Count > 0)
+                                    {
+                                        foreach (StudyExchange study in listProgramStudyExchange)
+                                        {
+                                            <div class="col-xl-auto mb-3">
+                                                <div class="location d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="book" style="color: #e30059"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Môn học đối tác: </strong><span>@study.CourseName</span>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Môn học FPT: </strong><span>@study.FptCourse</span>
+                                                </div>
+                                                <div class="partner-colab d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="target" style="color: #00cfd5"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Điểm tối đa: </strong><span>@study.MaxMark</span>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Điểm điều kiện: </strong><span>@study.PassMark</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mt-4">
+                    <!-- Account page navigation-->
+                    <nav id="navContainer" class="nav nav-borders">
+                        <a class="nav-link ms-0" href="@Url.Action("ViewProgramManage", "Programs", new{programId = program.ProgramId})">Danh sách đăng ký</a>
+                        <a class="nav-link" href="@Url.Action("ListApproveProgram", "Programs", new{programId = program.ProgramId})">Danh sách tham gia</a>
+                        @if(program.IsStudyExchange == 1)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterStudy", "Programs", new{programId = program.ProgramId})">Quản lý điểm sinh viên</a>
+                        }
+                        @if (program.Status == StaticsData.CLOSE_STATUS)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterFeedback", "Programs", new{programId = program.ProgramId})">Đánh giá phản hồi</a>
+                        }
+                        <a class="nav-link" href="@Url.Action("ProgramInformation", "Programs", new{programId = program.ProgramId})">Thông tin chương trình</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <!-- Billing history card-->
+                    <div class="card mb-4">
+                        <div class="row card-header align-items-center justify-content-between mx-0">
+                            <div class="col-auto">
+                                Danh sách đang tham gia
+                            </div>
+                            <div class="col-12 col-xl-auto">
+                                <div class="dropdown no-caret">
+                                    <button class="btn btn-outline-success boder-green" id="dropdownStudy" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Cập nhật điểm theo môn học</button>
+                                    <div class="dropdown-menu dropdown-menu-end animated--fade-in-up" aria-labelledby="dropdownStudy">
+                                        @if (listProgramStudyExchange != null && listProgramStudyExchange.Count > 0)
+                                        {
+                                            foreach (StudyExchange study in listProgramStudyExchange)
+                                            {
+                                                <button class="dropdown-item text-primary text-lg" 
+                                                data-bs-toggle="modal" data-bs-target="#editCashModal_@study.ExchangeId">@study.CourseName (@study.FptCourse)</button>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <table id="datatablesSimple">
+                                <thead>
+                                    <tr>
+                                        <th>Số thứ tự</th>
+                                        <th>Mã số sinh viên</th>
+                                        <th>Họ và tên</th>
+                                        <th>Môn học đối tác</th>
+                                        <th>Môn học FPT</th>
+                                        <th>Điểm số</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ghi chú</th>
+                                        <th>Ngày cập nhật</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>Số thứ tự</th>
+                                        <th>Mã số sinh viên</th>
+                                        <th>Họ và tên</th>
+                                        <th>Môn học đối tác</th>
+                                        <th>Môn học FPT</th>
+                                        <th>Điểm số</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ghi chú</th>
+                                        <th>Ngày cập nhật</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                @if (listProgramStudyExchange != null && listProgramStudyExchange.Count > 0)
+                                {
+                                    int count = 1;
+                                    foreach (StudyExchange study in listProgramStudyExchange)
+                                    {
+                                        if (listAllRegister != null && listAllRegister.Count > 0)
+                                        {
+                                            foreach (ViewRegisterProgram register in listAllRegister) {
+                                                if (register.RegisterStatus == StaticsData.REGISTER_ACCEPT) {
+                                                <tr>
+                                                    <td>@count</td>
+                                                    <td>@register.UserRollNumber</td>
+                                                    <td>@register.UserName</td>
+                                                    <td>@study.CourseName</td>
+                                                    <td>@study.FptCourse</td>
+                                                    @{
+                                                        StudyResult studyResult = programsService.GetUserStudyResult(register.UserId, study.ExchangeId);
+                                                    }
+                                                    @if(studyResult != null) {
+                                                        <td>@studyResult.ResultMark</td>
+                                                        <td>
+                                                        @if (studyResult.SubjectStatus == false) {
+                                                            <span class="badge bg-danger">Not pass</span>
+                                                        } else {
+                                                            <span class="badge bg-success">Pass</span>
+                                                        }
+                                                        </td>
+                                                        <td>@studyResult.ConditionReason</td>
+                                                        <td>
+                                                            @if(studyResult.UpdateDate.HasValue) {
+                                                               <span>@studyResult.UpdateDate.Value.ToString("dd/MM/yyyy")</span>
+                                                            } else {
+                                                                <span>@DateTime.Now.ToString("dd/MM/yyyy")</span>
+                                                            }
+                                                        </td>
+                                                    } else {
+                                                        <td>0.0</td>
+                                                        <td>
+                                                            <span class="badge bg-danger">Not pass</span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="text-danger">Chưa cập nhật</span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="text-danger">Chưa cập nhật</span>
+                                                        </td>
+                                                    }
+                                                </tr>
+                                                count++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @if (listProgramStudyExchange != null && listProgramStudyExchange.Count > 0)
+            {
+                int count = 1;
+                foreach (StudyExchange study in listProgramStudyExchange)
+                {
+                    <div class="modal fade" id="editCashModal_@study.ExchangeId" tabindex="-1" role="dialog" aria-labelledby="editCashModalLabel_@study.ExchangeId" aria-hidden="true">
+                        <div class="modal-dialog" style="max-width: 950px;" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header d-block">
+                                    <div class="row justify-content-end">
+                                        <div class="col-sm-auto">
+                                            <button class="btn-close float-end" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-auto">
+                                            <h5 class="modal-title" id="editCashModalLabel_@study.ExchangeId">
+                                                Môn học đối tác: @study.CourseName
+                                            </h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-auto">
+                                            <h5 class="modal-title" id="editCashModalLabel_@study.ExchangeId">
+                                                Môn học FPT: @study.FptCourse
+                                            </h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-auto">
+                                            <h5 class="modal-title" id="editCashModalLabel_@study.ExchangeId">
+                                                Điểm tối đa: @study.MaxMark
+                                            </h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-auto">
+                                            <h5 class="modal-title" id="editCashModalLabel_@study.ExchangeId">
+                                                Điểm điều kiện: @study.PassMark
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-body">
+                                @if (listAllRegister != null && listAllRegister.Count > 0)
+                                {
+                                    foreach (ViewRegisterProgram register in listAllRegister) {
+                                        if (register.RegisterStatus == StaticsData.REGISTER_ACCEPT) {
+                                            <strong class="mb-2">@(count + ". " + register.UserRollNumber + " - " + register.UserName)</strong>
+                                            <div class="row">
+                                            @{
+                                                StudyResult studyResult = programsService.GetUserStudyResult(register.UserId, study.ExchangeId);
+                                                decimal rsMark = 0;
+                                                string reason = "";
+                                                string selectedPass = "";
+                                                string selectedFalse = "";
+                                                if (studyResult != null) {
+                                                    rsMark = studyResult.ResultMark;
+                                                    if (!string.IsNullOrEmpty(studyResult.ConditionReason)) reason = studyResult.ConditionReason;
+                                                }
+                                            }
+                                                <div class="col-md-3 mb-md-0">
+                                                    <label class="form-label mb-1 small">Điểm đạt được</label>
+                                                        <input class="form-control" type="number" name="resultMark_@study.ExchangeId" value="@rsMark"
+                                                    onblur="validateResultMark(this, @study.MaxMark)" oninput="validateResultMark(this, @study.MaxMark)" />
+                                                    <span class="mb-3 text-danger small" id="markError_@study.ExchangeId"></span>
+                                                 </div>
+                                                 <div class="col-md-3 mb-md-0">
+                                                    <label class="form-label mb-1 small">Tuân thủ quy định</label>
+                                                        <select class="form-select" name="studyCondition_@study.ExchangeId" onchange="validateStudyCondition(this)">
+                                                        <option class="text-success" value="pass">Pass</option>
+                                                        <option class="text-danger" value="false">False</option>
+                                                    </select>
+                                                        <script>
+                                                            var studyResultCondition = @((studyResult == null || studyResult != null && studyResult.Condition) ? "true" : "false");
+
+                                                            var selectElement = document.querySelector("[name='studyCondition_@study.ExchangeId']");
+                                                            for (var i = 0; i < selectElement.options.length; i++) {
+                                                                if (selectElement.options[i].value === (studyResultCondition ? "pass" : "false")) {
+                                                                    selectElement.options[i].selected = true;
+                                                                }
+                                                            }
+                                                        </script>
+                                                 </div>
+                                                 <div class="col-md-5 mb-md-0">
+                                                    <label class="form-label mb-1 small">Ghi chú</label>
+                                                    <input class="form-control" type="text" name="reasonCondition_@study.ExchangeId" value="@reason" oninput="validateReasonCondition(this)" />
+                                                    <span class="mb-3 text-danger small" id="reasonError_@study.ExchangeId"></span>
+                                                 </div>
+                                                 <input type="hidden" name="userStudyId_@study.ExchangeId" value="@register.UserId"/>
+                                            </div>
+                                        }
+                                        count++;
+                                    }
+                                }
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Hủy</button>
+                                    <button class="btn btn-primary-soft text-primary" type="button" id="updateRegisterStudy" onclick="UpdateRegisterStudy('@study.ExchangeId')">Cập nhật</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const navContainer = document.getElementById('navContainer');
+            const navLinks = navContainer.querySelectorAll('.nav-link');
+
+            // Xóa tất cả các lớp 'active' khỏi các phần tử <a>
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Kiểm tra URL hiện tại và thêm lớp 'active' cho phần tử <a> nếu khớp
+            const currentURL = window.location.href;
+            navLinks.forEach(link => {
+                if (currentURL.includes(link.getAttribute('href'))) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        function validateStudyCondition(select) {
+            if (select.name) {
+                var reasonInput = document.getElementsByName("reasonCondition_" + select.name.split("_")[1])[0];
+                var errorSpan = document.getElementById("reasonError_" + select.name.split("_")[1]);
+
+                if (select.value === "false") {
+                    reasonInput.addEventListener("blur", validateReasonCondition);
+                } else {
+                    errorSpan.textContent = "";
+                    reasonInput.removeEventListener("blur", validateReasonCondition);
+                }
+                validateReasonCondition(reasonInput);
+            }
+        }
+
+        function validateReasonCondition(input) {
+            if (input.name) {
+                var errorSpan = document.getElementById("reasonError_" + input.name.split("_")[1]);
+                var studyConditionSelect = document.querySelector("[name='studyCondition_" + input.name.split("_")[1] + "']");
+
+                if (studyConditionSelect.value === "false" && input.value.trim() === "") {
+                    errorSpan.textContent = "Vui lòng nhập ghi chú";
+                } else {
+                    errorSpan.textContent = "";
+                }
+            }
+        }
+
+        function validateResultMark(input, maxMark) {
+            var resultMark = parseFloat(input.value);
+            var errorSpan = document.getElementById("markError_" + input.name.split("_")[1]);
+            if (isNaN(resultMark) || resultMark < 0 || resultMark > maxMark) {
+                errorSpan.textContent = "Điểm đạt được không hợp lệ";
+            } else {
+                errorSpan.textContent = "";
+            }
+        }
+
+        function UpdateRegisterStudy(exchangeId) {
+
+            const userStudyIdElements = document.getElementsByName('userStudyId_' + exchangeId);
+            const resultMarkElements = document.getElementsByName('resultMark_' + exchangeId);
+            const studyConditionElements = document.getElementsByName('studyCondition_' + exchangeId);
+            const reasonConditionElements = document.getElementsByName('reasonCondition_' + exchangeId);
+
+            // Tạo một mảng để lưu trữ
+            const registerStudyList = [];
+
+            // add list : userId | rsMark | Condition | reasonCondition
+            if (userStudyIdElements.length > 0) {
+                for (var i = 0; i < userStudyIdElements.length; i++) {
+                    var userStudyId_ = userStudyIdElements[i].value;
+                    var resultMark_ = resultMarkElements[i].value;
+                    var studyCondition_ = studyConditionElements[i].value;
+                    var reasonCondition_ = reasonConditionElements[i].value;
+                    var combinedValue = userStudyId_ + '|' + resultMark_ + '|' + studyCondition_ + '|' + reasonCondition_;
+                    registerStudyList.push(combinedValue);
+                }
+            }
+
+            var formData = new FormData();
+            formData.append("exchangeId", exchangeId);
+            formData.append("registerStudyList", registerStudyList);
+
+            $.ajax({
+                url: "/Programs/UpdateRegisterStudy",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã cập nhật thông tin điểm thành công', "success");
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+
+        }
+    </script>
+</body>
+</html>

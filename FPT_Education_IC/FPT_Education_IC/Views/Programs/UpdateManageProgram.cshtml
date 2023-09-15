@@ -1,0 +1,324 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.ViewModels;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.Controllers;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    var userAccount = ViewBag.UserAccount as UsrAccount;
+    var usrAccountId = ViewBag.UsrAccountId;
+    AccountService accountService = ViewBag.AccountService;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    int programId = ViewBag.ProgramID;
+    Program program = programsService.getProgramById(programId);
+    string emailUpdate = "";
+    if (usrAccountId != null)
+    {
+        int userId = Convert.ToInt32(usrAccountId);
+        emailUpdate = accountService.getUsrEmailById(userId);
+    }
+    ManagementService managementService = ViewBag.ManagementService;
+    CampusService campusService = ViewBag.CampusService;
+    ArrayList listAllCampus = campusService.getAllCampus();
+    ArrayList listProgramManager = programsService.getAllManagerProgram(program.ProgramId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Quản lý chương trình</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-xl px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="user-plus"></i></div>
+                                        Phê duyệt quản lý chương trình
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <a class="btn btn-sm btn-outline-primary" href="@Url.Action("ProgramInformation", "Programs", new {programId = program.ProgramId})">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Quay lại quản lý chương trình
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-xl px-4 mt-4">
+                    <div class="row">
+                        <div class="col-xl-2">
+                            <div class="card mb-4">
+                                <div class="card-header text-center">Phê duyệt</div>
+                                <div class="card-body text-center">
+                                    <button class="btn btn-primary" onclick="ApproveProgram('@program.ProgramId')">Phê duyệt</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-8">
+                            <!-- Account details card-->
+                            <div class="card mb-4">
+                                <div class="card-header">Thông tin cán bộ quản lý</div>
+                                <div class="card-body">
+                                    <!-- Form Group (email address)-->
+                                    <div class="mb-3">
+                                        <label class="small mb-1" for="usrCampus">Chọn campus</label>
+                                        <select class="form-select" id="usrCampus">
+                                            <option selected disabled value="">Chọn campus</option>
+                                            @if (listAllCampus != null && listAllCampus.Count > 0)
+                                            {
+                                                foreach (FptCampus campus in listAllCampus)
+                                                {
+                                                    <option value="@campus.CampusCode">@campus.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                     <!-- Form Group (email address)-->
+                                    <div class="mb-3">
+                                        <label class="small mb-1" for="usrManage">Chọn tài khoản quản trị</label>
+                                        <select class="form-select" id="usrManage">
+                                            
+                                        </select>
+                                    </div>
+                                    <!-- Form Group (Roles)-->
+                                    <div class="mb-3">
+                                        <label class="small mb-1" for="levelManage">Chọn mức độ quản lý</label>
+                                        <select class="form-select" id="levelManage">
+                                            <option selected disabled value="">Chọn mức độ quản lý</option>
+                                            <option value="0">Quản lý trực tiếp</option>
+                                            <option value="1">Hỗ trợ quản lý</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" onclick="AddManageProgram()">Cập nhật quản lý</button>
+                                </div>
+                            </div>
+                            <div class="card mb-4">
+                                <div class="card-header">Danh sách cán bộ quản lý</div>
+                                <div class="card-body">
+                                    <!-- Form Group (email address)-->
+                                    <div class="mb-3">
+                                        <div id="listUserManage">
+                                            @if (listProgramManager != null && listProgramManager.Count > 0)
+                                            {
+                                                foreach (ViewProgramManager pm in listProgramManager)
+                                                {
+                                                    <div id="manage_@pm.userId">
+                                                        <div class="row gx-3 mb-3">
+                                                            <div class="col-md-6 mb-md-0">
+                                                                <label class="small mb-1" for="userNameDisp">Cán bộ quản lý</label>
+                                                                <input name="userNameDisp" type="text" readonly="" class="form-control" value="@pm.userEmail">
+                                                                <input name="userName" type="hidden" class="form-control" value="16">
+                                                            </div>
+                                                            <div class="col-md-5 mb-0">
+                                                                <label class="small mb-1" for="userLevelDisp">Mức độ quản lý</label>
+                                                                <input name="userLevelDisp" type="text" readonly="" class="form-control" value="@(pm.ManageRole == 0 ? "Quản lý trực tiếp" : "Hỗ trợ quản lý")">
+                                                                <input name="userLevel" type="hidden" class="form-control" value="@pm.ManageRole">
+                                                            </div>
+                                                            <div class="col-md-1 mb-0">
+                                                                <label class="small mb-1" for="deleteUsr">Xóa</label>
+                                                                <button class="btn-icon border-red text-red form-control" name="deleteUsr" type="button" onclick="RemoveUserManageFromList('@pm.userId')"> <i data-feather="trash-2"> </i></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var usrCampusSelect = document.getElementById('usrCampus');
+
+        function LoadAccountByCampus(list) {
+            var cselect = $("#usrManage");
+            cselect.empty();
+            cselect.append($('<option>', {
+                value: "",
+                text: "Chọn tài khoản quản trị",
+                disabled: true,
+                selected: true
+            }));
+            $.each(list, function (index, item) {
+                cselect.append($('<option>', {
+                    value: item.userId,
+                    text: item.email
+                }));
+            });
+        }
+
+        usrCampusSelect.addEventListener('change', function () {
+            const selectedValue = usrCampusSelect.value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Management/GetAccountMangeCampus",
+                data: { code: selectedValue },
+                success: function (data) {
+                    if (data.success) {
+                        LoadAccountByCampus(data.list);
+                    }
+                }
+            });
+        });
+
+        function AddManageProgram() {
+            
+            // user Name
+            var usrManage = document.getElementById('usrManage');
+            var usrManage_Option = usrManage.options[usrManage.selectedIndex];
+            var usrManageValue = '';
+            var usrManageText = '';
+            if (usrManage_Option) {
+                usrManageValue = usrManage_Option.value;
+                usrManageText = usrManage_Option.text;
+            }
+            // level
+            var levelManage = document.getElementById('levelManage');
+            var levelManage_Option = levelManage.options[levelManage.selectedIndex];
+            var levelManageValue = '';
+            var levelManageText = '';
+            if (levelManage_Option) {
+                levelManageValue = levelManage_Option.value;
+                levelManageText = levelManage_Option.text;
+            }
+
+            if (!usrManageValue || usrManageValue.trim() == '') {
+                showAlert('Vui lòng chọn một tài khoản quản lý.', 'warning');
+                return;
+            }
+            if (!levelManageValue || levelManageValue.trim() == '') {
+                showAlert('Vui lòng chọn mức độ quản lý.', 'warning');
+                return;
+            }
+
+            var userElements = document.querySelectorAll('[name="userName"]');
+
+            if (userElements.length > 0) {
+                for (var i = 0; i < userElements.length; i++) {
+                    if (userElements[i].value === usrManageValue) {
+                        showAlert('Quản lý đã được chọn. Vui lòng chọn quản lý khác.', 'warning');
+                        return;
+                    }
+                }
+            }
+
+            displayManageProgram(usrManageValue, usrManageText, levelManageValue, levelManageText);
+        }
+
+        function displayManageProgram(userId, userName, level, levelName) {
+            const listItem = document.createElement("div");
+            listItem.setAttribute("id", "manage_" + userId);
+            listItem.innerHTML =`
+                <div class="row gx-3 mb-3">
+                    <div class="col-md-6 mb-md-0">
+                        <label class="small mb-1" for="userNameDisp">Cán bộ quản lý</label>
+                        <input name="userNameDisp" type="text" readonly class="form-control" value="${userName}" />
+                        <input name="userName" type="hidden" class="form-control" value="${userId}" />
+                    </div>
+                    <div class="col-md-5 mb-0">
+                        <label class="small mb-1" for="userLevelDisp">Mức độ quản lý</label>
+                        <input name="userLevelDisp" type="text" readonly class="form-control" value="${levelName}" />
+                        <input name="userLevel" type="hidden" class="form-control" value="${level}" />
+                    </div>
+                    <div class="col-md-1 mb-0">
+                        <label class="small mb-1" for="deleteUsr">Xóa</label>
+                        <button class="btn-icon border-red text-red form-control" name="deleteUsr" type="button" onclick="RemoveUserManageFromList('${userId}')"> <i data-feather="trash-2"> </i></button>
+                    </div>
+                </div>
+                `;
+            const listUser = document.getElementById("listUserManage");
+            listUser.appendChild(listItem);
+            feather.replace();
+        }
+
+        function RemoveUserManageFromList(userId) {
+
+            var listUserDiv = document.querySelector('#listUserManage');
+            var userRemove = document.querySelector('#manage_' + userId);
+
+            if (listUserDiv && userRemove) {
+                listUserDiv.removeChild(userRemove);
+            }
+        }
+
+
+
+        function ApproveProgram(programId) {
+
+            const userManageElements = document.getElementsByName('userName');
+            const userLevelElements = document.getElementsByName('userLevel');
+
+            if (userManageElements.length <= 0) {
+                showAlert('Vui lòng chọn cán bộ quản lý cho chương trình.', 'warning');
+                return;
+            }
+
+            // Tạo một mảng để lưu trữ
+            const programManageList = [];
+
+            for (var i = 0; i < userManageElements.length; i++) {
+                var userId = userManageElements[i].value;
+                var usrLevel = userLevelElements[i].value;
+                var combinedValue = userId + '|' + usrLevel;
+                programManageList.push(combinedValue);
+            }
+
+            var formData = new FormData();
+            formData.append("programId", programId);
+            formData.append("programManageList", programManageList);
+
+            $.ajax({
+                url: "/Programs/UpdateApproveProgram",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã cập nhật quản lý chương trình thành công', "success");
+                        setTimeout(function () {
+                            window.location.href = "/Programs/ProgramInformation?programId="+programId;
+                        }, 2000);
+                    } else {
+                        await showAlert("Bạn không có quyền hoặc liên hệ với quản trị viên.", "warning");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+        }
+      
+    </script>
+</body>
+</html>

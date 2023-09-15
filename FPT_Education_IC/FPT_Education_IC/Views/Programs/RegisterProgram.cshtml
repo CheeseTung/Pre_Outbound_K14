@@ -1,0 +1,394 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    var userAccount = ViewBag.UserAccount as UsrAccount;
+    int programId = -1;
+    if (ViewBag.ProgramId != null) programId = ViewBag.ProgramId;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    CampusService campusService = ViewBag.CampusService;
+    Program program = programsService.getProgramById(programId);
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAccount = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listQuestion = programsService.listQuestionRegisterProgram(programId);
+
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Đăng ký tham gia chương trình</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        Đăng ký tham gia chương trình
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <a class="btn btn-outline-primary" href="@Url.Action("ViewProgramDetails", "Programs", new {programId = program.ProgramId})">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Thông tin chương trình
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row align-items-center justify-content-between">
+                                <div class="col-xl-12 mb-3">
+                                    <h1 class="page-header-title text-primary" style="font-size: 2.25rem !important">
+                                        @program.Title
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mb-4">
+                    <div class="row gx-4 justify-content-center">
+                        <div class="col-lg-7">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">Thông tin đăng ký chương trình</h5>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Họ và tên</label>
+                                        <input class="form-control" type="text" name="usrName" placeholder="Nhập họ và tên của bạn..."  value="@usrAccount.UserName" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Mã số sinh viên</label>
+                                        <input class="form-control" type="text" name="usrRollNumber" placeholder="Nhập mã số sinh viên..."  value="@usrAccount.RollNumber" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Ngày/tháng/năm sinh</label>
+                                        <input class="form-control" type="date" name="usrDOB"
+                                            @if (usrAccount.Dob.HasValue)
+                                            {
+                                                <text>value="@usrAccount.Dob.Value.ToString("yyyy-MM-dd")"</text>
+                                            } />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Giới tính theo CMND/CCCD</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="usrGender" value="1" @if (usrAccount.Gender == 1) { <text>checked</text> } />
+                                            <label class="form-check-label">Nam</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="usrGender" value="0" @if (usrAccount.Gender != 1) { <text>checked</text> } />
+                                            <label class="form-check-label">Nữ</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Số điện thoại</label>
+                                        <input class="form-control" type="text" name="usrPhone" placeholder="Nhập số điện thoại liên lạc..." value="@usrAccount.Phone" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Email</label>
+                                        <input class="form-control" type="text" name="usrEmail" placeholder="example@fpt.edu.vn..." readonly value="@usrAccount.Email" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Campus</label>
+                                        <input class="form-control" type="text" name="usrCampus" readonly value="@campusService.getNameByCode(usrAccount.Campus)" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Chuyên ngày</label>
+                                        <input class="form-control" type="text" name="usrMajor" placeholder="Nhập ngành học của bạn..." value="@usrAccount.Major" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Số CMND/CCCD</label>
+                                        <input class="form-control" type="text" name="IdNumber" placeholder="Nhập số CCCD..."  value="@usrAccount.IdNumber" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Ngày cấp CMND/CCCD</label>
+                                        <input class="form-control" type="date" name="IdNumberStDate"
+                                            @if (usrAccount.IdNumberStDate.HasValue)
+                                            {
+                                                <text>value="@usrAccount.IdNumberStDate.Value.ToString("yyyy-MM-dd")"</text>
+                                            } />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Số hộ chiếu (Chưa có thì bỏ qua)</label>
+                                        <input class="form-control" type="text" name="passportNum" placeholder="Nhập số hộ chiếu..." value="@usrAccount.Passport" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Ngày cấp hộ chiếu (Chưa có thì bỏ qua)</label>
+                                        <input class="form-control" type="date" name="passportStDate"
+                                            @if (usrAccount.PassportStartDate.HasValue)
+                                            {
+                                                <text>value="@usrAccount.PassportStartDate.Value.ToString("yyyy-MM-dd")"</text>
+                                            } />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Ngày hết hạn hộ chiếu (Chưa có thì bỏ qua)</label>
+                                        <input class="form-control" type="date" name="passportEndDate"
+                                            @if (usrAccount.PassportEndDate.HasValue)
+                                            {
+                                                <text>value="@usrAccount.PassportEndDate.Value.ToString("yyyy-MM-dd")"</text>
+                                            } />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="small mb-1">Link Facebook cá nhân</label>
+                                        <input class="form-control" type="text" name="linkFacebook" placeholder="Nhập link facebook cá nhân..."  value="@usrAccount.Facebook" />
+                                    </div>
+                                    @if (listQuestion != null && listQuestion.Count > 0)
+                                    {
+                                        foreach(RegisterQuestion question in listQuestion)
+                                        {
+                                            <div class="mb-3">
+                                                <label class="small mb-1">@Html.Raw(question.QuestionContent)</label>
+                                                @{
+                                                    RegisterAnswer registerAnswer = programsService.GetRegisterAnswer(usrAccount.UserId, question.Id);
+                                                }
+                                                <input class="form-control" type="text" name="answerQuestion" placeholder="Nhập câu trả lời của bạn..." value="@registerAnswer.AnswerContent" />
+                                                <input type="hidden" name="questionID" value="@question.Id" />
+                                            </div>
+                                        }
+                                    }
+                                    @{
+                                        ArrayList listPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+                                        if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                                        {
+                                            <div class="mb-3">
+                                                <label class="fw-bold mb-1">Chọn trường tham gia chương trình:</label>
+                                                <select class="form-select" type="text" name="programPartner">
+                                                    @foreach (ViewProgramCooperation view in listPartnerProgram)
+                                                    {
+                                                        <option value="@view.PartnerId">@view.PartnerName</option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                        }
+                                    }
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" id="agreeRegister" type="checkbox" value="">
+                                        <label class="form-check-label" for="agreeRegister">Tôi xác nhận đồng ý tham gia chương trình và chấp nhận mọi điều kiện khi tham gia chương trình</label>
+                                    </div>
+                                    <div class="mb-3 mt-3 text-center">
+                                        <button class="btn btn-primary" id="btnRegister" disabled onclick="RegisterNewProgram('@usrAccount.UserId', '@program.ProgramId')">Đăng ký tham gia</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer" , emrSession)
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#agreeRegister').change(function () {
+                $('#btnRegister').prop('disabled', !$(this).is(':checked'));
+            });
+        });
+
+        function ValidateInput() {
+            const userName = document.querySelector('input[name="usrName"]').value;
+            const usrRollNumber = document.querySelector('input[name="usrRollNumber"]').value;
+            const usrDOB = document.querySelector('input[name="usrDOB"]').value;
+            var selectedGender = document.querySelector('input[name="usrGender"]:checked');
+            var usrGender = "1";
+            if (selectedGender) {
+                usrGender = selectedGender.value;
+            }
+            const usrPhone = document.querySelector('input[name="usrPhone"]').value;
+            const usrEmail = document.querySelector('input[name="usrEmail"]').value;
+            const usrMajor = document.querySelector('input[name="usrMajor"]').value;
+            const IdNumber = document.querySelector('input[name="IdNumber"]').value;
+            const IdNumberStDate = document.querySelector('input[name="IdNumberStDate"]').value;
+            const passportNum = document.querySelector('input[name="passportNum"]').value;
+            const passportStDate = document.querySelector('input[name="passportStDate"]').value;
+            const passportEndDate = document.querySelector('input[name="passportEndDate"]').value;
+            const linkFacebook = document.querySelector('input[name="linkFacebook"]').value;
+            var answerInputs = document.querySelectorAll('input[name="answerQuestion"]');
+            const programPartner = document.querySelector('select[name="programPartner"]');
+            
+            if (programPartner && programPartner.value.trim() == '') {
+                showAlert('Vui lòng chọn đối tác tham gia chương trình.', 'warning');
+                return false;
+            }
+
+            if (userName.trim() === '') {
+                showAlert('Vui lòng nhập tên người dùng.', 'warning');
+                return false;
+            }
+            if (usrRollNumber.trim() === '') {
+                showAlert('Vui lòng nhập mã số sinh viên.', 'warning');
+                return false;
+            }
+            if (usrDOB.trim() === '') {
+                showAlert('Vui lòng nhập ngày sinh.', 'warning');
+                return false;
+            }
+            if (!selectedGender) {
+                showAlert('Vui lòng chọn giới tính.', 'warning');
+                return false;
+            }
+            if (usrPhone.trim() === '') {
+                showAlert('Vui lòng nhập số điện thoại.', 'warning');
+                return false;
+            }
+            if (usrEmail.trim() === '') {
+                showAlert('Vui lòng nhập địa chỉ email.', 'warning');
+                return false;
+            }
+            if (usrMajor.trim() === '') {
+                showAlert('Vui lòng nhập chuyên ngành học.', 'warning');
+                return false;
+            }
+            if (IdNumber.trim() === '') {
+                showAlert('Vui lòng nhập số CMND/CCCD.', 'warning');
+                return false;
+            }
+            if (IdNumberStDate.trim() === '') {
+                showAlert('Vui lòng nhập ngày cấp CMND/CCCD.', 'warning');
+                return false;
+            }
+            if (passportNum.trim() !== '') {
+                if (passportStDate.trim() === '') {
+                    showAlert('Vui lòng nhập ngày cấp hộ chiếu.', 'warning');
+                    return false;
+                }
+                if (passportEndDate.trim() === '') {
+                    showAlert('Vui lòng nhập ngày hết hạn hộ chiếu.', 'warning');
+                    return false;
+                }
+                if (passportEndDate < passportStDate) {
+                    showAlert('Ngày cấp hộ chiếu phải lớn hơn hoặc bằng ngày hết hạn hộ chiếu.', 'warning');
+                    return false;
+                }
+            }
+            if (linkFacebook.trim() === '') {
+                showAlert('Vui lòng nhập link Facebook.', 'warning');
+                return false;
+            }
+            // Loop through the input elements
+            answerInputs.forEach(function (input) {
+                if (input.value.trim() === '') {
+                    showAlert('Vui lòng nhập câu trả lời cho tất cả các câu hỏi.', 'warning');
+                    return false; // Prevent form submission if needed
+                }
+            });
+
+            return true;
+        }
+
+        function PerformRegistration(userId, programId) {
+            const userName = document.querySelector('input[name="usrName"]').value;
+            const usrRollNumber = document.querySelector('input[name="usrRollNumber"]').value;
+            const usrDOB = document.querySelector('input[name="usrDOB"]').value;
+            var selectedGender = document.querySelector('input[name="usrGender"]:checked');
+            var usrGender = "1";
+            if (selectedGender) {
+                usrGender = selectedGender.value;
+            }
+            const usrPhone = document.querySelector('input[name="usrPhone"]').value;
+            const usrEmail = document.querySelector('input[name="usrEmail"]').value;
+            const usrMajor = document.querySelector('input[name="usrMajor"]').value;
+            const IdNumber = document.querySelector('input[name="IdNumber"]').value;
+            const IdNumberStDate = document.querySelector('input[name="IdNumberStDate"]').value;
+            const passportNum = document.querySelector('input[name="passportNum"]').value;
+            const passportStDate = document.querySelector('input[name="passportStDate"]').value;
+            const passportEndDate = document.querySelector('input[name="passportEndDate"]').value;
+            const linkFacebook = document.querySelector('input[name="linkFacebook"]').value;
+            var answerInputs = document.querySelectorAll('input[name="answerQuestion"]');
+            var questionID = document.querySelectorAll('input[name="questionID"]');
+            const programPartner = document.querySelector('select[name="programPartner"]');
+            var partnerId = '';
+            if (programPartner) {
+                partnerId = programPartner.value;
+            }
+
+            var formData = new FormData();
+
+            formData.append('usrId', userId);
+            formData.append('programId', programId);
+            formData.append('usrName', userName);
+            formData.append('usrRollNumber', usrRollNumber);
+            formData.append('usrDOB', usrDOB);
+            formData.append('usrGender', usrGender);
+            formData.append('usrPhone', usrPhone);
+            formData.append('usrEmail', usrEmail);
+            formData.append('usrMajor', usrMajor);
+            formData.append('IdNumber', IdNumber);
+            formData.append('IdNumberStDate', IdNumberStDate);
+            formData.append('passportNum', passportNum);
+            formData.append('passportStDate', passportStDate);
+            formData.append('passportEndDate', passportEndDate);
+            formData.append('linkFacebook', linkFacebook);
+            formData.append('partnerId', partnerId);
+
+            // Lặp qua các trường input answerQuestion và thêm vào FormData
+            answerInputs.forEach(function (input) {
+                formData.append('answerQuestion', input.value);
+            });
+
+            questionID.forEach(function (input) {
+                formData.append('questionID', input.value);
+            });
+
+
+
+            $.ajax({
+                url: "/Programs/DoRegisterProgram",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã đăng ký tham gia chương trình thành công', "success");
+                        setTimeout(function () {
+                            const programDetailsUrl = `/Programs/ViewProgramDetails?programId=${programId}`;
+                            window.location.href = programDetailsUrl;
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+        }
+
+        async function RegisterNewProgram(userId, programId) {
+            if (!ValidateInput()) {
+                return;
+            }
+
+            const confirmationResult = await showConfirm('Bạn chắc chắn muốn đăng ký', 'Vui lòng kiểm tra kỹ thông tin của mình và chắc chắn muốn đăng ký tham gia chương trình?', 'Đăng ký', 'Hủy');
+
+            if (!confirmationResult) {
+                return;
+            } else {
+                // Tiến hành đăng ký sau khi xác nhận
+                PerformRegistration(userId, programId);
+            }
+        }
+    </script>
+</body>
+</html>

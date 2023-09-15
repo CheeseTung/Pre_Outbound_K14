@@ -1,0 +1,547 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    int programId = -1;
+    if (ViewBag.ProgramId != null) programId = ViewBag.ProgramId;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    Program program = programsService.getProgramById(programId);
+    RegisterService registerService = ViewBag.RegisterService;
+    CampusService campusService = ViewBag.CampusService;
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAccount = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+    ArrayList listAllRegister = registerService.GetAllProgramRegister(program.ProgramId);
+    if (listPartnerProgram == null || listPartnerProgram.Count <= 0)
+    {
+        listAllRegister = registerService.GetAllProgramNonePartnerRegister(program.ProgramId);
+    }
+    ArrayList listQuestion = programsService.listQuestionRegisterProgram(programId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Danh sách duyệt chương trình</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="text-primary">
+                                        @program.Title
+                                    </h1>
+                                </div>
+                                <div class="col-auto mb-3">
+                                    <a class="btn btn-outline-primary" href="@Url.Action("ListManageProgram", "Programs")">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Danh sách chương trình
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @{
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày bắt đầu: </strong><span>@program.StartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày kết thúc: </strong><span>@program.EndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày mở đăng ký: </strong><span>@program.RegisterStartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày đóng đăng ký: </strong><span>@program.RegisterEndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    if (program.PaymentValue.HasValue)
+                                    {
+                                        <div class="col-xl-3 mb-3">
+                                            <div class="location d-flex align-items-center">
+                                                <i class="feather-lg" data-feather="dollar-sign" style="color: chocolate"></i>
+                                                <strong style="padding-left: 8px;padding-right: 5px;">Chi phí tham gia: </strong><span>@StaticsData.FormatCurrency(program.PaymentValue)</span>
+                                            </div>
+                                            <div class="partner-colab d-flex align-items-center">
+                                                <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                                <strong style="padding-left: 8px;padding-right: 5px;">Ngày đóng đăng ký: </strong><span>@program.PaymentEndDate.Value.ToString("dd/MM/yyyy")</span>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                                    {
+                                        foreach (ViewProgramCooperation view in listPartnerProgram)
+                                        {
+                                            <div class="col-xl-auto mb-3">
+                                                <div class="location d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="map-pin" style="color: #e30059"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Quốc gia: </strong><span>@view.PartnerCountry</span>
+                                                </div>
+                                                <div class="partner-colab d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="users" style="color: #00cfd5"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Đối tác: </strong><span>@view.PartnerName</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mt-4">
+                    <!-- Account page navigation-->
+                    <nav id="navContainer" class="nav nav-borders">
+                        <a class="nav-link ms-0" href="@Url.Action("ViewProgramManage", "Programs", new{programId = program.ProgramId})">Danh sách đăng ký</a>
+                        <a class="nav-link" href="@Url.Action("ListApproveProgram", "Programs", new{programId = program.ProgramId})">Danh sách tham gia</a>
+                        @if(program.IsStudyExchange == 1)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterStudy", "Programs", new{programId = program.ProgramId})">Quản lý điểm sinh viên</a>
+                        }
+                        @if (program.Status == StaticsData.CLOSE_STATUS)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterFeedback", "Programs", new{programId = program.ProgramId})">Đánh giá phản hồi</a>
+                        }
+                        <a class="nav-link" href="@Url.Action("ProgramInformation", "Programs", new{programId = program.ProgramId})">Thông tin chương trình</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <!-- Billing history card-->
+                    <div class="card mb-4">
+                        <div class="row card-header align-items-center justify-content-between mx-0">
+                            <div class="col-auto">
+                                Danh sách đang tham gia
+                            </div>
+                            <div class="col-12 col-xl-auto">
+                                @if (program.IsStudyExchange == 1)
+                                {
+                                    <span class="badge bg-teal">Trao đổi học tập</span>
+                                }
+                                else if (program.IsStudyExchange == 2)
+                                {
+                                    <span class="badge bg-orange">Trao đổi văn hóa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-pink">Chương trình khác</span>
+                                }
+
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <table id="datatablesSimple">
+                                <thead>
+                                    <tr>
+                                        <th>Số thứ tự</th>
+                                        <th>Mã số sinh viên</th>
+                                        <th>Email</th>
+                                        <th>Họ và tên</th>
+                                        @if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                                        {
+                                        <th>Đối tác</th>
+                                        <th>Quốc gia</th>
+                                        }
+                                        <th>Ngày đăng ký</th>
+                                        <th>Trạng thái</th>
+                                        @if (program.PaymentValue.HasValue)
+                                        {
+                                            <th>Thanh toán phí</th>
+                                        }
+                                        <th>Xét duyệt</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>Số thứ tự</th>
+                                        <th>Mã số sinh viên</th>
+                                        <th>Email</th>
+                                        <th>Họ và tên</th>
+                                        @if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                                        {
+                                        <th>Đối tác</th>
+                                        <th>Quốc gia</th>
+                                        }
+                                        <th>Ngày đăng ký</th>
+                                        <th>Trạng thái</th>
+                                        @if (program.PaymentValue.HasValue)
+                                        {
+                                            <th>Thanh toán phí</th>
+                                        }
+                                        <th>Xét duyệt</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    @if (listAllRegister != null && listAllRegister.Count > 0)
+                                    {
+                                        int count = 1;
+                                        foreach (ViewRegisterProgram register in listAllRegister) {
+                                        if (register.RegisterStatus == StaticsData.REGISTER_ACCEPT) {
+                                        <tr>
+                                            <td>@count</td>
+                                            <td>@register.UserRollNumber</td>
+                                            <td>@register.UserEmail</td>
+                                            <td>@register.UserName</td>
+                                            @if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                                            {
+                                            <td>@register.PartnerName</td>
+                                            <td>@register.PartnerCountry</td>
+                                            }
+                                            
+                                            <td>
+                                                @if (register.UpdateDate.HasValue)
+                                                {
+                                                    @Html.Raw(register.UpdateDate.Value.ToString("dd/MM/yyyy"))
+                                                } else {
+                                                    @Html.Raw("Unkown")
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-green">Đã được duyệt</span> 
+                                            </td>
+                                            @{
+                                                if (program.PaymentValue.HasValue)
+                                                {
+
+                                                    PaymentLog payment = registerService.getRegisterPayment(register.RegisterId, program.ProgramId);
+                                                    if (payment == null || payment.PaymentValue == 0)
+                                                    {
+                                                        <td><span class="badge bg-red">Chưa thanh toán</span> </td>
+                                                    }
+                                                    else if (payment.PaymentValue < program.PaymentValue)
+                                                    {
+                                                        <td><span class="badge bg-orange">Chưa thanh toán đủ</span></td>
+                                                    }
+                                                    else if (payment.PaymentValue >= program.PaymentValue)
+                                                    {
+                                                        <td><span class="badge bg-teal">Đã thanh toán</span></td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>Unknow</td>
+                                                    }
+                                                }
+                                            }
+                                            <td>
+                                                @{
+                                                    UsrAccount usrAccRegister = accountService.GetUsrAccountById(register.UserId);
+                                                    string userCampus = campusService.getNameByCode(usrAccRegister.Campus);
+                                                    string userGender = (usrAccRegister.Gender == 1) ? "Nam" : "Nữ";
+                                                }
+                                                <button class="btn btn-datatable btn-icon text-blue me-2" type="button"
+                                                    data-register-id="@register.RegisterId"
+                                                    data-partner-name="@register.PartnerName"
+                                                    data-user-name="@usrAccRegister.UserName"
+                                                    data-user-rollNumber="@usrAccRegister.RollNumber"
+                                                    data-user-dob="@usrAccRegister.Dob"
+                                                    data-user-gender="@userGender"
+                                                    data-user-phone="@usrAccRegister.Phone"
+                                                    data-user-email="@usrAccRegister.Email"
+                                                    data-user-campus="@userCampus"
+                                                    data-user-major="@usrAccRegister.Major"
+                                                    data-user-idNumber="@usrAccRegister.IdNumber"
+                                                    data-user-idNumberStDate="@usrAccRegister.IdNumberStDate"
+                                                    data-user-passport="@usrAccRegister.Passport"
+                                                    data-user-passportStDate="@usrAccRegister.PassportStartDate"
+                                                    data-user-passportEndDate="@usrAccRegister.PassportEndDate"
+                                                    data-user-facebookLink="@usrAccRegister.Facebook"
+                                                    data-user-registerStatus="@register.RegisterStatus"
+                                                    data-user-rqCancel="@register.RequestCancel"
+                                                    data-user-rqChange="@register.RequestChange"
+                                                    onclick="ViewUserRegister(this)"
+                                                    data-bs-toggle="modal" data-bs-target="#editRegisterModal"><i data-feather="edit"></i></button>
+                                            </td>
+                                        </tr>
+                                        count++;
+                                        }
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <div class="modal fade" id="editRegisterModal" tabindex="-1" role="dialog" aria-labelledby="editRegisterModalLabel" aria-hidden="true">
+                <div class="modal-dialog" style="max-width: 850px !important;" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editRegisterModalLabel">Thông tin đăng ký</h5>
+                            <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="usrRegisterId" value="" />
+                            <div class="mb-3">
+                                <label class="small mb-1">Chọn đối tác của chương trình</label>
+                                <input class="form-control bg-light" type="text" name="usrPartner" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Họ và tên</label>
+                                <input class="form-control bg-light" type="text" name="usrName" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Mã số sinh viên</label>
+                                <input class="form-control bg-light" type="text" name="usrRollNumber" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Ngày/tháng/năm sinh</label>
+                                <input class="form-control bg-light" type="date" name="usrDOB" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Giới tính theo CMND/CCCD</label>
+                                <input class="form-control bg-light" type="text" name="usrGender" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Số điện thoại</label>
+                                <input class="form-control bg-light" type="text" name="usrPhone" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Email</label>
+                                <input class="form-control bg-light" type="text" name="usrEmail" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Campus</label>
+                                <input class="form-control bg-light" type="text" name="usrCampus" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Chuyên ngày</label>
+                                <input class="form-control bg-light" type="text" name="usrMajor" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Số CMND/CCCD</label>
+                                <input class="form-control bg-light" type="text" name="IdNumber" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Ngày cấp CMND/CCCD</label>
+                                <input class="form-control bg-light" type="date" name="IdNumberStDate" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Số hộ chiếu</label>
+                                <input class="form-control bg-light" type="text" name="passportNum" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Ngày cấp hộ chiếu</label>
+                                <input class="form-control bg-light" type="date" name="passportStDate" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Ngày hết hạn hộ chiếu</label>
+                                <input class="form-control bg-light" type="date" name="passportEndDate" readonly value="" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="small mb-1">Link Facebook cá nhân</label>
+                                <input class="form-control bg-light" type="text" name="linkFacebook" readonly value="" />
+                            </div>
+                            @if (listQuestion != null && listQuestion.Count > 0)
+                            {
+                                foreach (RegisterQuestion question in listQuestion)
+                                {
+                                    <div class="mb-3">
+                                        <label class="small mb-1">@Html.Raw(question.QuestionContent)</label>
+                                        <input class="form-control bg-light" type="text" id="answerQuestion_@question.Id" readonly value="" />
+                                    </div>
+                                }
+                            }
+                            <div class="mb-3">
+                                <label class="mb-1">Trạng thái xét duyệt</label>
+                                <select class="form-select" style="font-size: 1rem;" name="updateStatus">
+                                    <option disabled selected value="">Chọn trạng thái xét duyệt: </option>
+                                    <option class="text-orange" value="@StaticsData.REGISTER_PENDING">Cập nhật thông tin</option>
+                                    <option class="text-red" value="@StaticsData.REGISTER_CANCEL">Từ chối</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 d-none" id="cancelReasonDiv">
+                                <label class="mb-1">Lý do hủy đăng ký</label>
+                                <textarea class="form-control" id="cancelReason" readonly style="min-width:20px;"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="mb-1">Nhập yêu cầu thay đổi (nếu có)</label>
+                                <textarea class="form-control" id="rqChangeRegister" style="min-width:20px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer justify-content-center">
+                            <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Thoát</button>
+                            <button class="btn btn-primary-soft text-primary" type="button" id="editUsrRegisterButton">Xét duyệt</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const navContainer = document.getElementById('navContainer');
+            const navLinks = navContainer.querySelectorAll('.nav-link');
+
+            // Xóa tất cả các lớp 'active' khỏi các phần tử <a>
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Kiểm tra URL hiện tại và thêm lớp 'active' cho phần tử <a> nếu khớp
+            const currentURL = window.location.href;
+            navLinks.forEach(link => {
+                if (currentURL.includes(link.getAttribute('href'))) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        
+        function ViewUserRegister(button) {
+            var registerIdValue = button.getAttribute("data-register-id");
+            var partnerNameValue = button.getAttribute("data-partner-name");
+            var userNameValue = button.getAttribute("data-user-name");
+            var userRollNumberValue = button.getAttribute("data-user-rollNumber");
+            var userDOBValue = button.getAttribute("data-user-dob");
+            var userGenderValue = button.getAttribute("data-user-gender");
+            var userPhoneValue = button.getAttribute("data-user-phone");
+            var userEmailValue = button.getAttribute("data-user-email");
+            var userCampusValue = button.getAttribute("data-user-campus");
+            var userMajorValue = button.getAttribute("data-user-major");
+            var userIdNumberValue = button.getAttribute("data-user-idNumber");
+            var userIdNumberStDateValue = button.getAttribute("data-user-idNumberStDate");
+            var userPassportValue = button.getAttribute("data-user-passport");
+            var userPassportStDateValue = button.getAttribute("data-user-passportStDate");
+            var userPassportEndDateValue = button.getAttribute("data-user-passportEndDate");
+            var userFacebookLinkValue = button.getAttribute("data-user-facebookLink");
+
+            // Gán giá trị vào các input tương ứng
+            document.querySelector('[name="usrRegisterId"]').value = registerIdValue;
+            document.querySelector('[name="usrPartner"]').value = partnerNameValue;
+            document.querySelector('[name="usrName"]').value = userNameValue;
+            document.querySelector('[name="usrRollNumber"]').value = userRollNumberValue;
+            document.querySelector('[name="usrDOB"]').value = formatDate(userDOBValue);
+            document.querySelector('[name="usrGender"]').value = userGenderValue;
+            document.querySelector('[name="usrPhone"]').value = userPhoneValue;
+            document.querySelector('[name="usrEmail"]').value = userEmailValue;
+            document.querySelector('[name="usrCampus"]').value = userCampusValue;
+            document.querySelector('[name="usrMajor"]').value = userMajorValue;
+            document.querySelector('[name="IdNumber"]').value = userIdNumberValue;
+            document.querySelector('[name="IdNumberStDate"]').value = formatDate(userIdNumberStDateValue);
+            document.querySelector('[name="passportNum"]').value = userPassportValue;
+            document.querySelector('[name="passportStDate"]').value = formatDate(userPassportStDateValue);
+            document.querySelector('[name="passportEndDate"]').value = formatDate(userPassportEndDateValue);
+            document.querySelector('[name="linkFacebook"]').value = userFacebookLinkValue;
+
+            var registerStatusValue = button.getAttribute("data-user-registerStatus");
+            var updateStatus = document.querySelector('[name="updateStatus"]');
+            if (!registerStatusValue || registerStatusValue == '@StaticsData.REGISTER_ACCEPT') {
+                registerStatusValue = '';
+            }
+            updateStatus.value = registerStatusValue;
+
+            var rqCancelValue = button.getAttribute("data-user-rqCancel");
+            var cancelReasonDiv = document.querySelector('#cancelReasonDiv');
+            if (rqCancelValue && rqCancelValue != 'null') {
+                cancelReasonDiv.classList.remove('d-none');
+                document.querySelector('#cancelReason').value = rqCancelValue;
+            } else {
+                cancelReasonDiv.classList.add('d-none');
+                document.querySelector('#cancelReason').value = '';
+            }
+
+            var rqChangeValue = button.getAttribute("data-user-rqChange");
+            if (rqChangeValue && rqChangeValue != 'null') {
+                document.querySelector('#rqChangeRegister').value = rqChangeValue;
+            } else {
+                document.querySelector('#rqChangeRegister').value = '';
+            }
+
+            var editButton = document.getElementById("editUsrRegisterButton");
+            editButton.onclick = function () {
+                UpdateUserRegister(registerIdValue);
+            };
+        }
+
+        function UpdateUserRegister(registerID) {
+
+            var status = document.querySelector('[name="updateStatus"]').value;
+            var requestChange = document.getElementById("rqChangeRegister").value;
+
+            if (status == '@StaticsData.REGISTER_PENDING' && requestChange.trim() == '')
+            {
+                showAlert('Vui lòng nhập yêu cầu thay đổi hoặc yêu cầu cập nhật', 'warning');
+                return;
+            }
+            if (status == '@StaticsData.REGISTER_CANCEL' && requestChange.trim() == '') {
+                showAlert('Vui lòng nhập lý do hủy đăng ký', 'warning');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("registerId", registerID);
+            formData.append("registerStatus", status);
+            formData.append("requestChange", requestChange);
+
+            $.ajax({
+                url: "/Programs/UpdateRegisterStatus",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã cập nhật trạng thái xét duyệt thành công', "success");
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+        }
+
+        function formatDate(date, inputFormat = false) {
+            if (date) {
+                var options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+                var formattedDate = new Date(date).toLocaleDateString("en-CA", options);
+
+                if (inputFormat) {
+                    return new Date(date).toLocaleDateString("en-CA", { year: 'numeric', month: '2-digit', day: '2-digit' });
+                } else {
+                    return formattedDate;
+                }
+            }
+            return "";
+        }
+    </script>
+</body>
+</html>

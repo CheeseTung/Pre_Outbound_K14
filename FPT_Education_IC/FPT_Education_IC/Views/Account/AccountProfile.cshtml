@@ -1,0 +1,388 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Controllers;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    var userAccount = ViewBag.UserAccount as UsrAccount;
+    var campusName = ViewBag.CampusName;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Cài đặt tài khoản</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-xl px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="user"></i></div>
+                                        Cài đặt tài khoản
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-xl px-4 mt-4">
+                    <!-- Account page navigation-->
+                    <nav class="nav nav-borders">
+                        <a class="nav-link ms-0" href="@Url.Action("AccountProfile", "Account")">Hồ sơ cá nhân</a>
+                         @if (emrSession.userRole.Equals(StaticsData.DEFAULT_ROLE))
+                        {
+                            <a class="nav-link" href="@Url.Action("AccountBilling", "Account")">Lịch sử thanh toán</a>
+                            <a class="nav-link" href="@Url.Action("AccountResultStudy", "Account")">Thành tích học tập</a>
+                        }
+                        <a class="nav-link" href="@Url.Action("UserNotification", "Account")">Thông báo</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <!-- Profile picture card-->
+                            <div class="card mb-4 mb-xl-0">
+                                <div class="card-header">Ảnh người dùng</div>
+                                <div class="card-body text-center">
+                                    <!-- Profile picture image-->
+                                    <img class="img-account-profile avar-image-disp rounded-circle mb-2" id="imagePreviewAdd" src="@userAccount.Image" alt="" />
+                                    <!-- Profile picture help block-->
+                                    <div class="small font-italic text-muted mb-4">JPG hoặc PNG không lớn hơn 5 MB</div>
+                                    <!-- Profile picture upload button-->
+                                    <input type="file" class="form-control d-none" id="fileInputImageAdd" accept="image/*">
+                                    <button class="btn btn-primary" type="button" onclick="UploadAvatar()">Tải lên ảnh mới</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-8">
+                            <!-- Account details card-->
+                            <div class="card mb-4">
+                                <div class="card-header">Thông tin chung</div>
+                                <div class="card-body">
+                                    <form>
+                                        <!-- Form Group (username)-->
+                                        <div class="mb-3">
+                                            <label class="small mb-1" for="usrName">Tên người dùng</label>
+                                            <input class="form-control" id="usrName" name="usrName" type="text" placeholder="Enter your username" value="@userAccount.UserName" />
+                                        </div>
+                                        <!-- Form Row-->
+                                        <div class="row gx-3 mb-3">
+                                            <!-- Form Group (email address)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="usrEmail">Email address</label>
+                                                <input class="form-control" id="usrEmail" name="usrEmail" type="text" readonly placeholder="example@fpt.edu.vn" value="@userAccount.Email" />
+                                            </div>
+                                            <!-- Form Group (Campus)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="usrCampus">Campus</label>
+                                                <input class="form-control" id="usrCampus" name="usrCampus" type="text" readonly placeholder="Enter your campus" value="@campusName" />
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="mb-1 pe-2">Giới tính</label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="usrGender" value="1" @if (userAccount.Gender == 1)
+                                                {
+                                                    <text>checked</text>
+                                                } />
+                                                <label class="form-check-label">Nam</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="usrGender" value="0" @if (userAccount.Gender != 1)
+                                                {
+                                                    <text>checked</text>
+                                                } />
+                                                <label class="form-check-label">Nữ</label>
+                                            </div>
+                                        </div>
+                                        <!-- Form Row -->
+                                        <div class="row gx-3 mb-3">
+                                            <!-- Form Group (RollNumber)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="usrRollNumber">Mã số sinh viên</label>
+                                                <input class="form-control" id="usrRollNumber" name="usrRollNumber" type="text" placeholder="Enter your rollnumber" value="@userAccount.RollNumber" />
+                                            </div>
+                                            <!-- Form Group (Major)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="usrMajor">Chuyên ngành</label>
+                                                <input class="form-control" id="usrMajor" name="usrMajor" type="text" placeholder="Enter your major" value="@userAccount.Major" />
+                                            </div>
+                                        </div>
+                                        <!-- Form Group (Facebook)-->
+                                        <div class="mb-3">
+                                            <label class="small mb-1" for="linkFacebook">Facebook</label>
+                                            <input class="form-control" id="linkFacebook" name="linkFacebook" type="text" placeholder="Enter your facebook link" value="@userAccount.Facebook" />
+                                        </div>
+                                        <!-- Form Row-->
+                                        <div class="row gx-3 mb-3">
+                                            <!-- Form Group (phone number)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="usrPhone">Số điện thoại</label>
+                                                <input class="form-control" id="usrPhone" name="usrPhone" type="tel" maxlength="13" placeholder="Enter your phone number" value="@userAccount.Phone" />
+                                            </div>
+                                            <!-- Form Group (birthday)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="usrDOB">Ngày sinh</label>
+                                                <input class="form-control" type="date" name="usrDOB" id="usrDOB"
+                                                @if (userAccount.Dob.HasValue)
+                                                {
+                                                    <text>value="@userAccount.Dob.Value.ToString("yyyy-MM-dd")"</text>
+                                                } />
+                                            </div>
+                                        </div>
+                                        <!-- Form Row-->
+                                        <div class="row gx-3 mb-3">
+                                            <!-- Form Group (ID number)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="IdNumber">Số CMND/CCCD</label>
+                                                <input class="form-control" id="IdNumber" name="IdNumber" type="text" placeholder="Enter your ID number" value="@userAccount.IdNumber" />
+                                            </div>
+                                            <!-- Form Group (issue date ID number)-->
+                                            <div class="col-md-6">
+                                                <label class="small mb-1" for="IdNumberStDate">Ngày cấp CMND/CCCD</label>
+                                                <input class="form-control" type="date" name="IdNumberStDate" id="IdNumberStDate"
+                                                @if (userAccount.IdNumberStDate.HasValue)
+                                                {
+                                                    <text>value="@userAccount.IdNumberStDate.Value.ToString("yyyy-MM-dd")"</text>
+                                                } />
+                                            </div>
+                                        </div>
+                                        <div class="row gx-3 mb-3">
+                                            <!-- Form Group (Passport number)-->
+                                            <div class="col-md-4">
+                                                <label class="small mb-1" for="passportNum">Số hộ chiếu</label>
+                                                <input class="form-control" id="passportNum" name="passportNum" type="text" placeholder="Enter your passport number" value="@userAccount.Passport" />
+                                            </div>
+                                            <!-- Form Group (issue date Passport number)-->
+                                            <div class="col-md-4">
+                                                <label class="small mb-1" for="passportStDate">Ngày cấp hộ chiếu</label>
+                                                <input class="form-control" type="date" name="passportStDate" id="passportStDate"
+                                                @if (userAccount.PassportStartDate.HasValue)
+                                                {
+                                                    <text>value="@userAccount.PassportStartDate.Value.ToString("yyyy-MM-dd")"</text>
+                                                } />
+                                            </div>
+                                            <!-- Form Group (expire date Passport number)-->
+                                            <div class="col-md-4">
+                                                <label class="small mb-1" for="passportEndDate">Ngày hết hạn hộ chiếu</label>
+                                                <input class="form-control" type="date" name="passportEndDate" id="passportEndDate"
+                                                @if (userAccount.PassportEndDate.HasValue)
+                                                {
+                                                    <text>value="@userAccount.PassportEndDate.Value.ToString("yyyy-MM-dd")"</text>
+                                                } />
+                                            </div>
+                                        </div>
+                                        <!-- Save changes button-->
+                                        <button class="btn btn-primary" type="button" onclick="UpdateUserProfile()">Cập nhật thông tin</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const fileInputImgAdd = document.getElementById('fileInputImageAdd');
+        const imagePreviewAdd = document.getElementById('imagePreviewAdd');
+
+        fileInputImgAdd.addEventListener('change', async function () {
+            const file = fileInputImgAdd.files[0];
+            if (file) {
+                if (!await validateFile(file)) {
+                    imagePreviewAdd.src = '@userAccount.Image';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreviewAdd.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                
+            }
+        });
+
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+
+        async function validateFile(file) {
+            if (validImageTypes.indexOf(file.type) === -1) {
+                await showAlert("Vui lòng chỉ chọn tệp hình ảnh (jpeg, png, gif, svg hoặc webp).", "warning");
+                return false;
+            }
+            return true;
+        }
+
+        function UploadAvatar() {
+            const fileInputImageAdd = document.getElementById('fileInputImageAdd');
+            fileInputImageAdd.click();
+        }
+
+        function ValidateInput() {
+            const userName = document.querySelector('input[name="usrName"]').value;
+            const usrRollNumber = document.querySelector('input[name="usrRollNumber"]');
+            const usrDOB = document.querySelector('input[name="usrDOB"]').value;
+            var selectedGender = document.querySelector('input[name="usrGender"]:checked');
+            var usrGender = "1";
+            if (selectedGender) {
+                usrGender = selectedGender.value;
+            }
+            const usrPhone = document.querySelector('input[name="usrPhone"]').value;
+            const usrMajor = document.querySelector('input[name="usrMajor"]');
+            const IdNumber = document.querySelector('input[name="IdNumber"]').value;
+            const IdNumberStDate = document.querySelector('input[name="IdNumberStDate"]').value;
+            const passportNum = document.querySelector('input[name="passportNum"]').value;
+            const passportStDate = document.querySelector('input[name="passportStDate"]').value;
+            const passportEndDate = document.querySelector('input[name="passportEndDate"]').value;
+            const linkFacebook = document.querySelector('input[name="linkFacebook"]').value;
+
+            if (userName.trim() === '') {
+                showAlert('Vui lòng nhập tên người dùng.', 'warning');
+                return false;
+            }
+            if (usrRollNumber && usrRollNumber.value.trim() === '') {
+                showAlert('Vui lòng nhập mã số sinh viên.', 'warning');
+                return false;
+            }
+            if (usrDOB.trim() === '') {
+                showAlert('Vui lòng nhập ngày sinh.', 'warning');
+                return false;
+            }
+            if (!selectedGender) {
+                showAlert('Vui lòng chọn giới tính.', 'warning');
+                return false;
+            }
+            if (usrPhone.trim() === '') {
+                showAlert('Vui lòng nhập số điện thoại.', 'warning');
+                return false;
+            }
+            if (usrMajor && usrMajor.value.trim() === '') {
+                showAlert('Vui lòng nhập chuyên ngành học.', 'warning');
+                return false;
+            }
+            if (IdNumber.trim() === '') {
+                showAlert('Vui lòng nhập số CMND/CCCD.', 'warning');
+                return false;
+            }
+            if (IdNumberStDate.trim() === '') {
+                showAlert('Vui lòng nhập ngày cấp CMND/CCCD.', 'warning');
+                return false;
+            }
+            if (passportNum.trim() !== '') {
+                if (passportStDate.trim() === '') {
+                    showAlert('Vui lòng nhập ngày cấp hộ chiếu.', 'warning');
+                    return false;
+                }
+                if (passportEndDate.trim() === '') {
+                    showAlert('Vui lòng nhập ngày hết hạn hộ chiếu.', 'warning');
+                    return false;
+                }
+                if (passportEndDate < passportStDate) {
+                    showAlert('Ngày cấp hộ chiếu phải lớn hơn hoặc bằng ngày hết hạn hộ chiếu.', 'warning');
+                    return false;
+                }
+            }
+            if (linkFacebook.trim() === '') {
+                showAlert('Vui lòng nhập link Facebook.', 'warning');
+                return false;
+            }
+
+            return true;
+        }
+
+        function PerformUpdateProfile() {
+            const userName = document.querySelector('input[name="usrName"]').value;
+            
+            const usrDOB = document.querySelector('input[name="usrDOB"]').value;
+            var selectedGender = document.querySelector('input[name="usrGender"]:checked');
+            var usrGender = "1";
+            if (selectedGender) {
+                usrGender = selectedGender.value;
+            }
+            const usrPhone = document.querySelector('input[name="usrPhone"]').value;
+            const usrMajor = document.querySelector('input[name="usrMajor"]');
+            const usrRollNumber = document.querySelector('input[name="usrRollNumber"]');
+            const IdNumber = document.querySelector('input[name="IdNumber"]').value;
+            const IdNumberStDate = document.querySelector('input[name="IdNumberStDate"]').value;
+            const passportNum = document.querySelector('input[name="passportNum"]').value;
+            const passportStDate = document.querySelector('input[name="passportStDate"]').value;
+            const passportEndDate = document.querySelector('input[name="passportEndDate"]').value;
+            const linkFacebook = document.querySelector('input[name="linkFacebook"]').value;
+            const fileInputImageAdd = $('#fileInputImageAdd')[0].files[0];
+
+            var formData = new FormData();
+
+            formData.append('usrName', userName);
+            formData.append('usrRollNumber', usrRollNumber.value);
+            formData.append('usrDOB', usrDOB);
+            formData.append('usrGender', usrGender);
+            formData.append('usrPhone', usrPhone);
+            formData.append('usrMajor', usrMajor.value);
+            formData.append('IdNumber', IdNumber);
+            formData.append('IdNumberStDate', IdNumberStDate);
+            formData.append('passportNum', passportNum);
+            formData.append('passportStDate', passportStDate);
+            formData.append('passportEndDate', passportEndDate);
+            formData.append('linkFacebook', linkFacebook);
+            formData.append('usrImg', fileInputImageAdd);
+
+            $.ajax({
+                url: "/Account/UpdateUserProfile",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã cập nhật thành công hồ sơ cá nhân', "success");
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+        }
+
+        async function UpdateUserProfile() {
+            if (!ValidateInput()) {
+                return;
+            }
+
+            const confirmationResult = await showConfirm('Xác nhận', 'Bạn chắc chắn muốn cập nhật thông tin hồ sơ cá nhân?', 'Cập nhật', 'Hủy');
+
+            if (!confirmationResult) {
+                return;
+            } else {
+                // Tiến hành đăng ký sau khi xác nhận
+                PerformUpdateProfile();
+            }
+        }
+
+    </script>
+</body>
+</html>

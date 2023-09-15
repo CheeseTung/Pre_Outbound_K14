@@ -1,0 +1,185 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    ArrayList listProgramCreate = programsService.GetAllManageParticipatingProgram(emrSession.userId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Chương trình đang quản lý</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-xl px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="grid"></i></div>
+                                        Chương trình của tôi
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-xl px-4">
+                    <!-- Account page navigation-->
+                    <nav class="nav nav-borders">
+                        <a class="nav-link" href="@Url.Action("ListManageProgram", "Programs")">Chương trình của tôi</a>
+                        <a class="nav-link" href="@Url.Action("ListRequestPrograms", "Programs")">Chờ phê duyệt</a>
+                        <a class="nav-link" href="@Url.Action("ManageParticipatingProgram", "Programs")">Đang tham gia</a>
+                        <a class="nav-link" href="@Url.Action("ManageParticipationProgram", "Programs")">Đã tham gia</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <div class="row gx-5">
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-check-label" for="stDate">Ngày bắt đầu</label>
+                                <input class="form-control" type="date" id="stDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-check-label" for="endDate">Ngày kết thúc</label>
+                                <input class="form-control" type="date" id="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-check-label" for="search">Tìm kiếm</label>
+                                <div class="input-group input-group-joined">
+                                    <input class="form-control pe-0" type="search" placeholder="Tìm kiếm..." aria-label="Search" />
+                                    <div class="input-group-text search-icon" onclick="searchConditionSubmit()"><i data-feather="search"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (listProgramCreate != null && listProgramCreate.Count > 0)
+                    {
+                        <hr class="mt-0 mb-3" />
+                        <div class="row mb-3">
+                            @foreach (Program program in listProgramCreate)
+                            {
+                                <div class="col-sm-6 col-md-4 col-xl-3 mb-4">
+                                    <a class="d-block lift rounded overflow-hidden mb-2" href="@Url.Action("ViewProgramDetails", "Programs", new {programId = program.ProgramId})">
+                                        <img class="img-fluid program-manage-img" src="@program.Image" alt="@program.Title" />
+                                    </a>
+                                    <div class="card card-body">
+                                        <div class="mt-2 mb-2">
+                                            @if (program.IsStudyExchange == 1)
+                                            {
+                                                <span class="badge bg-teal">Trao đổi học tập</span>
+                                            }
+                                            else if (program.IsStudyExchange == 2)
+                                            {
+                                                <span class="badge bg-orange">Trao đổi văn hóa</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-pink">Chương trình khác</span>
+                                            }
+
+
+                                            @if (program.Status == StaticsData.CREATE_STATUS)
+                                            {
+                                                <span class="badge bg-primary">Chờ phê duyệt</span>
+                                            }
+                                            else if (program.Status == StaticsData.START_STATUS)
+                                            {
+                                                <span class="badge bg-secondary">Mở đăng ký</span>
+                                            }
+                                            else if (program.Status == StaticsData.PROCESS_STATUS)
+                                            {
+                                                <span class="badge bg-pink">Cập nhật hồ sơ</span>
+                                            }
+                                            else if (program.Status == StaticsData.HAPPEN_STATUS)
+                                            {
+                                                <span class="badge bg-success">Đang diễn ra</span>
+                                            }
+                                            else if (program.Status == StaticsData.CLOSE_STATUS)
+                                            {
+                                                <span class="badge bg-dark">Đã kết thúc</span>
+                                            }
+                                        </div>
+                                        <h5 class="mt-1 page-header-title"><a href="@Url.Action("ViewProgramDetails", "Programs", new {programId = program.ProgramId})">@program.Title</a></h5>
+
+                                        @{
+                                            ArrayList getListPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+                                            string programCountry = "";
+                                            if (getListPartnerProgram != null && getListPartnerProgram.Count > 0)
+                                            {
+                                                for (int i = 0; i < getListPartnerProgram.Count; i++)
+                                                {
+                                                    ViewProgramCooperation view = (ViewProgramCooperation)getListPartnerProgram[i];
+
+                                                    programCountry += view.PartnerCountry;
+
+                                                    // Check if this is not the last element
+                                                    if (i < getListPartnerProgram.Count - 1)
+                                                    {
+                                                        programCountry += ", ";
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        <div class="location" style="min-height: 50px;">
+                                            <i data-feather="map-pin" style="color: #e30059"></i>
+                                            <strong style="padding-left: 8px;">Quốc gia: </strong><span>@Html.Raw(programCountry)</span>
+                                        </div>
+                                        <div class="start-time">
+                                            <i data-feather="clock"></i>
+                                            <span style="padding-left: 8px;">@program.StartDate</span>
+                                        </div>
+                                        <div class="end-time">
+                                            <i data-feather="calendar"></i>
+                                            <span style="padding-left: 8px;">@program.EndDate</span>
+                                        </div>
+                                        @if (program.Status != StaticsData.CREATE_STATUS)
+                                        {
+                                            <div class="pt-3 text-center">
+                                                <a class="btn btn-sm btn-outline-orange" href="@Url.Action("ViewProgramManage", "Programs", new {programId = program.ProgramId})">Quản lý chương trình</a>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="pt-3 text-center">
+                                                <a class="btn btn-sm btn-outline-success" href="@Url.Action("ViewProgramDetails", "Programs", new {programId = program.ProgramId})">Chi tiết chương trình</a>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+</body>
+</html>

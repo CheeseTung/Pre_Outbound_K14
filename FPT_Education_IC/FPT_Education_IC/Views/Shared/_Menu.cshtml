@@ -1,0 +1,265 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.Service;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAccount = accountService.GetUsrAccountById(emrSession.userId);
+    bool checklogin = false;
+    if (User.Identity.IsAuthenticated && emrSession != null && !string.IsNullOrEmpty(emrSession.userIdIdentity))
+    {
+        checklogin = true;
+    }
+    SystemsService systemsService = ViewBag.SystemsService;
+    ArrayList contactUs_List = systemsService.GetContactUsList();
+    PermissionService permissionService = ViewBag.PermissionService;
+}
+    <div id="layoutSidenav_nav">
+    <nav class="sidenav shadow-right sidenav-light">
+        <div class="sidenav-menu">
+            <div class="nav accordion" id="accordionSidenav">
+                <!-- Sidenav Link (HomePage)-->
+                <div class="sidenav-menu-heading">Home</div>
+                <a class="nav-link" id="homePage" href="@Url.Action("HomePage", "Home")">
+                    <div class="nav-link-icon"><i data-feather="home"></i></div>
+                    Trang chủ
+                </a>
+@if (checklogin) {
+    @if (!usrAccount.Role.Equals(StaticsData.DEFAULT_ROLE)) {
+                <a class="nav-link" id="viewDashboard" href="@Url.Action("ViewDashboard", "Systems")">
+                    <div class="nav-link-icon"><i data-feather="activity"></i></div>
+                    Số liệu thống kê
+                </a>
+    }
+                <!-- Sidenav Menu Heading (User)-->
+                <div class="sidenav-menu-heading">User</div>
+                    <!-- Sidenav Link (Alerts)-->
+                <a class="nav-link" id="accountProfile" href="@Url.Action("AccountProfile", "Account")">
+                    <div class="nav-link-icon"><i data-feather="user"></i></div>
+                    Tài khoản
+                </a>
+    @if (usrAccount.Role.Equals(StaticsData.DEFAULT_ROLE)) {
+                <!-- Sidenav Link (Billing)-->
+                <a class="nav-link" id="userBilling" href="@Url.Action("AccountBilling", "Account")">
+                    <div class="nav-link-icon"><i data-feather="credit-card"></i></div>
+                    Lịch sử thanh toán
+                </a>
+                <!-- Sidenav Link (Result study)-->
+                <a class="nav-link" id="resultStudy" href="@Url.Action("AccountResultStudy", "Account")">
+                    <div class="nav-link-icon"><i data-feather="award"></i></div>
+                    Thành tích học tập
+                </a>
+    }
+                <!-- Sidenav Link (Alerts)-->
+                <!-- * * Note: * * Visible only on and above the sm breakpoint-->
+                    <a class="nav-link" href="@Url.Action("UserNotification", "Account")">
+                    <div class="nav-link-icon"><i data-feather="bell"></i></div>
+                    Thông báo
+                    <span class="badge bg-warning-soft text-warning ms-auto"></span>
+                </a>
+    @if (usrAccount.Role.Equals(StaticsData.DEFAULT_ROLE)) {
+                <!-- Sidenav Menu Heading (Program)-->
+                <div class="sidenav-menu-heading">Programs</div>
+                <!-- Sidenav Accordion (Programs)-->
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#Programs" aria-expanded="false" aria-controls="Programs">
+                        <div class="nav-link-icon"><i data-feather="grid"></i></div>
+                    Chương trình của tôi
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="Programs" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="registerProgram" href="@Url.Action("ViewRegisterProgram", "UserProgram")">
+                            <span>Đang đăng ký</span>
+                        </a>
+                            <a class="nav-link" id="participatingProgram" href="@Url.Action("ViewParticipatingProgram", "UserProgram")">
+                            <span>Đang tham gia</span>
+                        </a>
+                            <a class="nav-link" id="participationProgram" href="@Url.Action("ViewParticipationProgram", "UserProgram")">
+                            <span>Đã tham gia</span>
+                        </a>
+                    </nav>
+                </div>
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#Forums" aria-expanded="false" aria-controls="Forums">
+                    <div class="nav-link-icon"><i data-feather="message-circle"></i></div>
+                    Diễn đàn của tôi
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="Forums" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="registerProgram" href="@Url.Action("ParticipatingForum", "Forums")">
+                            <span>Đang tham gia</span>
+                        </a>
+                        <a class="nav-link" id="participationProgram" href="@Url.Action("ParticipationForum", "Forums")">
+                            <span>Đã tham gia</span>
+                        </a>
+                    </nav>
+                </div>
+    }
+    @if (usrAccount.Role.Equals(StaticsData.STAFF_ROLE) || usrAccount.Role.Equals(StaticsData.ADMIN_ROLE) || usrAccount.Role.Equals(StaticsData.SUPER_ADMIN_ROLE)) {
+                <!-- Sidenav Menu Heading (Manage)-->
+                <div class="sidenav-menu-heading">Manage</div>
+        @if (usrAccount.Role.Equals(StaticsData.ADMIN_ROLE) || usrAccount.Role.Equals(StaticsData.SUPER_ADMIN_ROLE)) {
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#AccountManage" aria-expanded="false" aria-controls="AccountManage">
+                    <div class="nav-link-icon"><i data-feather="shield"></i></div>
+                    Quản lý tài khoản
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="AccountManage" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="addManageAccount" href="@Url.Action("AddManageAccount", "Management")">
+                            <span>Phân quyền tài khoản</span>
+                        </a>
+                        <a class="nav-link" id="accountManageList" href="@Url.Action("AccountManageList", "Management")">
+                            <span>Danh sách tài khoản quản trị</span>
+                        </a>
+                    </nav>
+                </div>
+        }
+                <!-- Sidenav Accordion (Programs Manage)-->
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#ProgramManage" aria-expanded="false" aria-controls="ProgramManage">
+                    <div class="nav-link-icon"><i data-feather="grid"></i></div>
+                    Quản lý chương trình
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="ProgramManage" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="createProgram" href="@Url.Action("CreateProgram", "Programs")">
+                            <span>Tạo chương trình mới</span>
+                        </a>
+                        <a class="nav-link" id="ListManageProgram" href="@Url.Action("ListManageProgram", "Programs")">
+                            <span>Danh sách chương trình</span>
+                        </a>
+                        <a class="nav-link" id="ListRequestPrograms" href="@Url.Action("ListRequestPrograms", "Programs")">
+                            <span>Chương trình chờ phê duyệt</span>
+                        </a>
+                        <a class="nav-link" id="participatingProgram" href="@Url.Action("ManageParticipatingProgram", "Programs")">
+                            <span>Đang tham gia</span>
+                        </a>
+                        <a class="nav-link" id="participationProgram" href="@Url.Action("ManageParticipationProgram", "Programs")">
+                            <span>Đã tham gia</span>
+                        </a>
+                    </nav>
+                </div>
+                <!-- Sidenav Accordion (Forums Manage)-->
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#ForumManage" aria-expanded="false" aria-controls="ForumManage">
+                    <div class="nav-link-icon"><i data-feather="message-circle"></i></div>
+                    Quản lý diễn đàn
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="ForumManage" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="participatingForum" href="@Url.Action("ParticipatingForum", "Forums")">
+                            <span>Đang tham gia</span>
+                        </a>
+                        <a class="nav-link" id="participationForum" href="@Url.Action("ParticipationForum", "Forums")">
+                            <span>Đã tham gia</span>
+                        </a>
+                    </nav>
+                </div>
+                <!-- Sidenav Accordion (Partner Manage)-->
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#Partner" aria-expanded="false" aria-controls="Partner">
+                    <div class="nav-link-icon"><i data-feather="users"></i></div>
+                    Quản lý đối tác
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="Partner" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="registerProgram" href="@Url.Action("AddPartner", "Partner")">
+                            <span>Thêm đối tác mới</span>
+                        </a>
+                        <a class="nav-link" id="registerProgram" href="@Url.Action("ManagePartner", "Partner")">
+                            <span>Danh sách đối tác</span>
+                        </a>
+                                <a class="nav-link" id="ceatedPrograms" href="@Url.Action("RequestPartner", "Partner")">
+                            <span>Đối tác chờ phê duyệt</span>
+                        </a>
+                    </nav>
+                </div>
+                <!-- Sidenav Accordion (Document Manage)-->
+                        <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#Documents" aria-expanded="false" aria-controls="Documents">
+                    <div class="nav-link-icon"><i data-feather="file-text"></i></div>
+                    Quản lý tài liệu
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                        <div class="collapse" id="Documents" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="participationProgram" href="@Url.Action("AddDocument", "Document")">
+                            <span>Thêm mới tài liệu</span>
+                        </a>
+                        <a class="nav-link" id="registerProgram" href="@Url.Action("ManageDocument", "Document")">
+                            <span>Danh sách tài liệu</span>
+                        </a>
+                                <a class="nav-link" id="ceatedPrograms" href="@Url.Action("RequestDocument", "Document")">
+                            <span>Tài liệu chờ phê duyệt</span>
+                        </a>
+                    </nav>
+                </div>
+    }
+                <!-- Sidenav Heading (Application)-->
+                <div class="sidenav-menu-heading">Application</div>
+    @if (usrAccount.Role.Equals(StaticsData.ADMIN_ROLE) || usrAccount.Role.Equals(StaticsData.SUPER_ADMIN_ROLE)) {
+                <!-- Sidenav Accordion (System Setting)-->
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#SystemSetting" aria-expanded="false" aria-controls="SystemSetting">
+                    <div class="nav-link-icon"><i data-feather="settings"></i></div>
+                    Cấu hình hệ thống
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="SystemSetting" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        <a class="nav-link" id="participationProgram" href="@Url.Action("SystemMessage", "Systems")">
+                            <span>Tạo thông báo hệ thống</span>
+                        </a>
+                        <a class="nav-link" id="registerProgram" href="@Url.Action("ManageProgramType", "Systems")">
+                            <span>Phân loại chương trình</span>
+                        </a>
+                        <a class="nav-link" id="participationProgram" href="@Url.Action("ManageDocumentType", "Systems")">
+                            <span>Phân loại tài liệu</span>
+                        </a>
+                        <a class="nav-link" id="participationProgram" href="@Url.Action("InterfaceConfiguration", "Systems")">
+                            <span>Cấu hình giao diện</span>
+                        </a>
+                        <a class="nav-link" id="registerProgram" href="@Url.Action("CreateFAQSystem", "Systems")">
+                            <span>Cài đặt FAQ</span>
+                        </a>
+                    </nav>
+                </div>
+    }
+                <!-- Sidenav Link (FAQ)-->
+                <a class="nav-link" id="FAQSetting" href="@Url.Action("ViewListFAQ", "Systems")">
+                    <div class="nav-link-icon"><i data-feather="help-circle"></i></div>
+                    Những câu hỏi thường gặp
+                </a>
+                <!-- Sidenav Accordion (Contact)-->
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#Contacts" aria-expanded="false" aria-controls="Contacts">
+                    <div class="nav-link-icon"><i data-feather="message-square"></i></div>
+                    Liên hệ với chúng tôi
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="Contacts" data-bs-parent="#accordionSidenav">
+                    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                        @if (contactUs_List != null && contactUs_List.Count > 0) {
+                            foreach(CommonMaster cm in contactUs_List) {
+                                <a class="nav-link" id="@cm.MasterType" href="@cm.Description" target="_blank">
+                                    <span>@cm.MasterName</span>
+                                </a>
+                            }
+                        }
+                    </nav>
+                </div>
+}
+            </div>
+         </div>
+        <!-- Sidenav Footer-->
+        <div class="sidenav-footer">
+            <div class="sidenav-footer-content">
+                <div class="sidenav-footer-subtitle">Đăng nhập bởi:</div>
+                @if (checklogin && !string.IsNullOrEmpty(usrAccount.UserName))
+                {
+                    <div class="sidenav-footer-title">@usrAccount.UserName</div>
+                }
+            </div>
+        </div>
+    </nav>
+</div>

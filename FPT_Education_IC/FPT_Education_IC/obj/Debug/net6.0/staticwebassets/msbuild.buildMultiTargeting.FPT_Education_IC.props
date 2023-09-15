@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\FPT_Education_IC.props" />
+</Project>

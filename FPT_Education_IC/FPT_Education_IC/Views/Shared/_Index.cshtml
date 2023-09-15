@@ -1,0 +1,243 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+
+@model EmrSession;
+@{
+    bool checklogin = true;
+    if (User.Identity.IsAuthenticated && Model != null && !string.IsNullOrEmpty(Model.userIdIdentity))
+    {
+        checklogin = true;
+    }
+    SystemsService systemsService = ViewBag.SystemsService;
+    AccountService accountService = ViewBag.AccountService;
+    PermissionService permissionService = ViewBag.PermissionService;
+    CountryService countryService = ViewBag.CountryService;
+    ArrayList countryList = countryService.getAllCountry();
+    ArrayList programCategorizeList = systemsService.GetListProgramCategorize("");
+    ArrayList bannerList = systemsService.GetListBanner();
+    PartnerService partnerService = ViewBag.PartnerService;
+    ArrayList partnerList = partnerService.GetListAllPartner("", true);
+    ProgramsService programsService = ViewBag.ProgramsService;
+
+
+    ProgramViewModel listAllProgram = ViewBag.ListProgramView;
+
+}
+
+<div id="layoutSidenav_content">
+    <main>
+
+        @if (bannerList != null && bannerList.Count > 0) {
+        <header class="mb-4">
+            <div class="banner">
+                <div class="slider">
+                    @foreach(CommonMaster banner in bannerList) {
+                        <a href="@Url.Action("ViewProgramDetails", "Programs", new {programId = banner.Description})"><img src="@banner.MasterName" alt="@banner.MasterType"></a>
+                    }
+                    @if (bannerList[0] is CommonMaster bannerFirst)
+                    {
+                        <a href="@Url.Action("ViewProgramDetails", "Programs", new {programId = bannerFirst.Description})"><img src="@bannerFirst.MasterName" alt="@bannerFirst.MasterType"></a>
+                    }
+                </div>
+                <button class="prev" onclick="prevSlide()">&#10094;</button>
+                <button class="next" onclick="nextSlide()">&#10095;</button>
+            </div>
+        </header>
+        }
+        else
+        {
+        <header class="py-5 mb-4 bg-orange">
+            <div class="container-xl px-4">
+                <div class="text-center">
+                    <h1 class="text-white">Chào mừng đến với FPTEIC</h1>
+                    <p class="lead mb-0 text-white-50">Hệ thống trao đổi và hợp tác quốc tế Đại học FPT</p>
+                </div>
+            </div>
+        </header>
+        }
+
+        <!-- Main page content-->
+        <div class="container-xl px-4">
+            <div class="form-inline me-auto d-none d-lg-block me-3" style="padding-left: 80% !important">
+                <div class="input-group input-group-joined">
+                    <input class="form-control pe-0" type="search" placeholder="Tìm kiếm.." aria-label="Search" />
+                    <div class="input-group-text search-icon" onclick="searchConditionSubmit()"><i data-feather="search"></i></div>
+                </div>
+            </div>
+            <div class="mb-3" ></div>
+            <div class="row gx-5">
+                <div class="col-md-2 d-flex align-items-center">
+                    <div class="mb-3">
+                        <div class="form-check form-check-solid">
+                            <input class="form-check-input" style="border-color: #403f3e" id="cultureExchange" checked name="cultureExchange" type="checkbox" value="Culture">
+                            <label class="form-check-label" for="cultureExchange">Trao đổi văn hóa</label>
+                        </div>
+                        <div class="form-check form-check-solid">
+                            <input class="form-check-input" style="border-color: #403f3e" id="studyExchange" checked name="studyExchange" type="checkbox" value="Study">
+                            <label class="form-check-label" for="studyExchange">Trao đổi học tập</label>
+                        </div>
+                        <div class="form-check form-check-solid">
+                            <input class="form-check-input" style="border-color: #403f3e" id="otherProgram" checked name="otherProgram" type="checkbox" value="Other">
+                            <label class="form-check-label" for="otherProgram">Chương trình khác</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label class="form-check-label" for="programType">Loại chương trình</label>
+                        <select class="form-select" id="Country">
+                            <option value="all">Tất cả loại chương trình</option>
+                            @if (programCategorizeList != null)
+                            {
+                                foreach (CommonMaster item in programCategorizeList)
+                                {
+                                    <option value="@item.MasterType">@item.MasterName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label class="form-check-label" for="Country">Chọn quốc gia</label>
+                        <select class="form-select" id="Country">
+                            <option value="all">Tất cả quốc gia</option>
+                            @if (countryList != null && countryList.Count > 0)
+                            {
+                                foreach (Country c in countryList)
+                                {
+                                    <option value="@c.IsoCode">@c.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label class="form-check-label" for="stDate">Ngày bắt đầu</label>
+                        <input class="form-control" type="date" id="stDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label class="form-check-label" for="endDate">Ngày kết thúc</label>
+                        <input class="form-control" type="date" id="endDate" value="@DateTime.Now.AddMonths(6).ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-2" />
+            <div class="row mt-3 mb-3">
+                @if (listAllProgram != null) {
+                    foreach (Program program in listAllProgram.Programs)
+                    {
+                        if (program.Status != StaticsData.CREATE_STATUS) {
+                        <div class="col-md-6 col-xl-4 mb-4">
+                            <a class="d-block lift rounded overflow-hidden mb-2" href="@Url.Action("ViewProgramDetails", "Programs", new {programId = program.ProgramId})"><img class="img-fluid home-img" src="@program.Image" alt="@program.Title" title="@program.Title" /></a>
+                            <div class="card card-body" style="height: 375px;">
+                            <div class="pb-3">
+                                @if (program.IsStudyExchange == 1) {
+                                <span class="badge bg-teal">Trao đổi học tập</span>
+                                } else if (program.IsStudyExchange == 2) {
+                                <span class="badge bg-orange">Trao đổi văn hóa</span>
+                                } else {
+                                <span class="badge bg-pink">Other</span>
+                                }
+
+                                @if (program.Status == StaticsData.START_STATUS)
+                                {
+                                    <span class="badge bg-secondary">Mở đăng ký</span>
+                                }
+                                else if (program.Status == StaticsData.HAPPEN_STATUS || program.Status == StaticsData.PROCESS_STATUS)
+                                {
+                                    <span class="badge bg-pink">Đang diễn ra</span>
+                                }
+                                else if (program.Status == StaticsData.CLOSE_STATUS)
+                                {
+                                    <span class="badge bg-dark">Đã kết thúc</span>
+                                }
+                            </div>
+                                <h2 class="mt-1 page-header-title"><a href="@Url.Action("ViewProgramDetails", "Programs", new {programId = program.ProgramId})">@program.Title</a></h2>
+                            <div class="word-dot mb-2" style="min-height: 130px;">
+                                @Html.Raw(program.Description)
+                            </div>
+                            @{
+                                ArrayList getListPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+                                string programCountry = "";
+                                if (getListPartnerProgram != null && getListPartnerProgram.Count > 0)
+                                {
+                                    for (int i = 0; i < getListPartnerProgram.Count; i++)
+                                    {
+                                        ViewProgramCooperation view = (ViewProgramCooperation)getListPartnerProgram[i];
+
+                                        programCountry += view.PartnerCountry;
+
+                                        // Check if this is not the last element
+                                        if (i < getListPartnerProgram.Count - 1)
+                                        {
+                                            programCountry += ", ";
+                                        }
+                                    }
+                                }
+                            }
+                            <div class="location">
+                                <i data-feather="map-pin" style="color: #e30059"></i>
+                                <strong style="padding-left: 8px;">Quốc gia: </strong><span>@Html.Raw(programCountry)</span>
+                            </div>
+                            <div class="start-time">
+                                <i data-feather="clock" style="color: #009259"></i>
+                                <strong style="padding-left: 8px;">Bắt đầu: </strong><span>@program.StartDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="end-time">
+                                <i data-feather="calendar" style="color: #c51200"></i>
+                                <strong style="padding-left: 8px;">Kết thúc: </strong><span>@program.EndDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                }
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <!-- Left icon -->
+                        @if (listAllProgram.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("HomePage", "Home", new { page = listAllProgram.CurrentPage - 1 })" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        }
+
+                        <!-- Pagination links -->
+                        @for (int i = 1; i <= listAllProgram.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == listAllProgram.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("HomePage", "Home", new { page = i })">@i</a>
+                            </li>
+                        }
+
+                        <!-- Right icon -->
+                        @if (listAllProgram.CurrentPage < listAllProgram.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("HomePage", "Home", new { page = listAllProgram.CurrentPage + 1 })" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </main>
+    @Html.Partial("_Footer")
+</div>

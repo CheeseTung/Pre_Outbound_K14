@@ -1,0 +1,290 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.ViewModels;
+@using FPT_Education_IC.Controllers;
+@using FPT_Education_IC.Service;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    DocumentService documentService = ViewBag.DocumentService;
+    int docId = ViewBag.DocumentId;
+    PartnerDocument doc = documentService.GetDocumentById(docId);
+    SystemsService systemsService = ViewBag.SystemsService;
+    ArrayList documentTypeList = systemsService.GetListDocumentType();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Cập nhật tài liệu</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="file"></i></div>
+                                        Cập nhật tài liệu
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <a class="btn btn-sm btn-outline-primary" href="@Url.Action("ManageDocument", "Document")">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Danh sách tài liệu
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mt-4">
+                    <hr class="mt-0 mb-4" />
+                    <div class="card mb-4">
+
+                        <div class="card-body">
+                            <div class="tab-content" id="cardTabContent">
+                                <!-- Wizard tab pane item 1-->
+                                <div class="tab-pane py-xl-2 fade show active" id="wizard1" role="tabpanel" aria-labelledby="wizard1-tab">
+                                    <div class="row justify-content-center">
+                                        <div class="col-xxl-10 col-xl-12">
+                                            <div class="mb-3">
+                                                <label class="mb-1">Tên tài liệu</label>
+                                                <input class="form-control" id="inputNameAcc" name="docname" type="text" placeholder="Nhập tên tài liệu" value="@doc.Name" />
+                                            </div>
+                                            <div class="row gx-3">
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="PartnerName" class="mb-1">Chọn đối tác</label>
+                                                    <select class="form-select" name="partnerid" id="PartnerName">
+                                                        <option value="" disabled>Chọn đối tác</option>
+                                                        @foreach (Partner item in ViewBag.listPartner)
+                                                        {
+                                                            <option value="@item.PartnerId" selected="@(item.PartnerId == doc.PartnerId)">@item.Name</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="PartnerProgram" class="small mb-1">Chọn chương trình (nếu có)</label>
+                                                    <select class="form-select" name="programid" id="PartnerProgram">
+                                                        <option disabled selected>Chọn chương trình của đối tác: </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="row gx-3">
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="" class="mb-1">Loại tài liệu</label>
+                                                    <select class="form-select" name="type" id="doctype">
+                                                        <option disabled value="">Chọn loại tài liệu: </option>
+                                                        @if (documentTypeList != null && documentTypeList.Count > 0)
+                                                        {
+                                                            foreach (CommonMaster cm in documentTypeList)
+                                                            {
+                                                                <option value="@cm.MasterType" selected="@(cm.MasterType.Trim().Equals(doc.Type.Trim()))">@cm.MasterName</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3 col-md-3">
+                                                    <label class="mb-1">Ngày bắt đầu</label>
+                                                    <input class="form-control" name="startdate" id="startdate" type="date" value="@doc.StartDate.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                                <div class="mb-3 col-md-3">
+                                                    <label for="" class="mb-1">Ngày kết thúc</label>
+                                                    <input class="form-control" name="enddate" id="enddate" type="date" 
+                                                    @if (doc.EndDate.HasValue)
+                                                    {
+                                                        <text>value="@doc.EndDate.Value.ToString("yyyy-MM-dd")"</text>
+                                                    }  />
+                                                </div>
+                                            </div>
+                                            <div class="row gx-3 mt-3">
+                                                <div class="col-12 mb-md-0">
+                                                    <label for="" class="mb-1">Mô tả tài liệu</label>
+                                                    <textarea class="form-control auto-expand" name="desc" id="description" placeholder="Nhập mô tả tài liệu">@doc.Description</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row gx-3 mt-3">
+                                                <div class="col-12 mb-md-0">
+                                                    <label for="" class="mb-1">Tải lên tài liệu</label>
+                                                    <input class="form-control" id="docFile" name="document" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" value="@doc.Path" />
+                                                </div>
+                                            </div>
+
+                                            <hr class="my-4" />
+                                            <div class="d-flex justify-content-between">
+                                                <button class="btn btn-primary" type="button" onclick="UpdateDocument('@doc.DocumentId')">Cập nhật tài liệu</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const partnerNameSelect = document.getElementById('PartnerName');
+        const partnerProgramSelect = document.getElementById('PartnerProgram');
+
+        function LoadProgramByPartner(list) {
+            var pselect = $("#PartnerProgram");
+            pselect.empty();
+
+            pselect.append($('<option>', {
+                value: "",
+                text: "Chọn chương trình của đối tác:",
+                disabled: true
+            }));
+
+
+
+            $.each(list, function (index, item) {
+                var option = $('<option>', {
+                    value: item.programId,
+                    text: item.title
+                });
+
+                if (item.programId === '@doc.ProgramId') {
+                    option.attr("selected", true); // Đánh dấu option được chọn
+                }
+                pselect.append(option);
+            });
+        }
+
+        partnerNameSelect.addEventListener('change', function () {
+            const selectedPartner = partnerNameSelect.value;
+
+            $.ajax({
+                type: "POST",
+                url: "/Document/GetProgramsByPartner",
+                data: { partnerId: selectedPartner },
+                success: function (data) {
+                    if (data.success) {
+                        LoadProgramByPartner(data.list);
+                    }
+                }
+            });
+        });
+
+        function ValidateDocument() {
+            var docName = $("#inputNameAcc").val();
+            var partner = $("#PartnerName").val();
+            var docType = $("#doctype").val();
+            var stDate = $("#startdate").val();
+            var enddate = $("#enddate").val();
+            var description = $("#description").val();
+            var fileDoc = $("#docFile").val();
+
+            if (!docName || docName.trim() == '') {
+                showAlert('Vui lòng nhập tên tài liệu', 'warning');
+                return false;
+            }
+
+            if (!partner || partner.trim() == '') {
+                showAlert('Vui lòng chọn đối tác', 'warning');
+                return false;
+            }
+
+            if (!docType || docType.trim() == '') {
+                showAlert('Vui lòng chọn loại tài liệu', 'warning');
+                return false;
+            }
+
+            if (!stDate || stDate.trim() == '') {
+                showAlert('Vui lòng nhập ngày bắt đầu của tài liệu', 'warning');
+                return false;
+            }
+
+            if (enddate && enddate.trim() != '' && enddate < stDate) {
+                showAlert('Ngày kết thúc phải lớn hơn này bắt đầu', 'warning');
+                return false;
+            }
+
+            return true;
+        }
+
+
+        function UpdateDocument(documentId) {
+
+            if (!ValidateDocument()) {
+                return;
+            }
+
+            var docName = $("#inputNameAcc").val();
+            var partner = $("#PartnerName").val();
+            var docType = $("#doctype").val();
+            var stDate = $("#startdate").val();
+            var enddate = $("#enddate").val();
+            var description = $("#description").val();
+            var program = $("#PartnerProgram").val();
+            var fileDoc = $("#docFile")[0].files[0];
+
+            var formData = new FormData();
+
+            formData.append("documentId", documentId);
+            formData.append("docname", docName);
+            formData.append("partnerid", partner);
+            formData.append("type", docType);
+            if (program) {
+                formData.append("programid", program);
+            }
+            formData.append("startdate", stDate);
+            if (enddate) {
+                formData.append("enddate", enddate);
+            }
+            formData.append("desc", description);
+            if (fileDoc) {
+                formData.append("docAdd", fileDoc);
+            }
+            formData.append("oldDoc", '@doc.Path');
+
+            $.ajax({
+                url: "/Document/DoUpdate",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã cập nhật tài liệu thành công', "success");
+                        setTimeout(function () {
+                            window.location.href = "/Document/ManageDocument";
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+        }
+
+    </script>
+
+</body>
+</html>

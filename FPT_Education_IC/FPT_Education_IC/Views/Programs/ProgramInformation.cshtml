@@ -1,0 +1,379 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    int programId = -1;
+    if (ViewBag.ProgramId != null) programId = ViewBag.ProgramId;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    Program program = programsService.getProgramById(programId);
+    RegisterService registerService = ViewBag.RegisterService;
+    DocumentService documentService = ViewBag.DocumentService;
+    CampusService campusService = ViewBag.CampusService;
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAccount = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+    ArrayList listAllRegister = registerService.GetAllProgramRegister(program.ProgramId);
+    if (listPartnerProgram == null || listPartnerProgram.Count <= 0)
+    {
+        listAllRegister = registerService.GetAllProgramNonePartnerRegister(program.ProgramId);
+    }
+    ArrayList listProgramManager = programsService.getAllManagerProgram(program.ProgramId);
+    List<LogEntry> logEntries = programsService.ReadProgramLog(program.ProgramId);
+    ArrayList listProgramDocument = documentService.GetAllProgramDocument(program.ProgramId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Thông tin chương trình</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="text-primary">
+                                        @program.Title
+                                    </h1>
+                                </div>
+                                <div class="col-auto mb-3">
+                                    <a class="btn btn-outline-primary" href="@Url.Action("ListManageProgram", "Programs")">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Danh sách chương trình
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @{
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày bắt đầu: </strong><span>@program.StartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày kết thúc: </strong><span>@program.EndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày mở đăng ký: </strong><span>@program.RegisterStartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày đóng đăng ký: </strong><span>@program.RegisterEndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    if (program.PaymentValue.HasValue)
+                                    {
+                                        <div class="col-xl-3 mb-3">
+                                            <div class="location d-flex align-items-center">
+                                                <i class="feather-lg" data-feather="dollar-sign" style="color: chocolate"></i>
+                                                <strong style="padding-left: 8px;padding-right: 5px;">Chi phí tham gia: </strong><span>@StaticsData.FormatCurrency(program.PaymentValue)</span>
+                                            </div>
+                                            <div class="partner-colab d-flex align-items-center">
+                                                <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                                <strong style="padding-left: 8px;padding-right: 5px;">Ngày đóng đăng ký: </strong><span>@program.PaymentEndDate.Value.ToString("dd/MM/yyyy")</span>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                                    {
+                                        foreach (ViewProgramCooperation view in listPartnerProgram)
+                                        {
+                                            <div class="col-xl-auto mb-3">
+                                                <div class="location d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="map-pin" style="color: #e30059"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Quốc gia: </strong><span>@view.PartnerCountry</span>
+                                                </div>
+                                                <div class="partner-colab d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="users" style="color: #00cfd5"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Đối tác: </strong><span>@view.PartnerName</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mt-4">
+                    <!-- Account page navigation-->
+                    <nav id="navContainer" class="nav nav-borders">
+                        <a class="nav-link ms-0" href="@Url.Action("ViewProgramManage", "Programs", new{programId = program.ProgramId})">Danh sách đăng ký</a>
+                        <a class="nav-link" href="@Url.Action("ListApproveProgram", "Programs", new{programId = program.ProgramId})">Danh sách tham gia</a>
+                        @if (program.IsStudyExchange == 1)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterStudy", "Programs", new{programId = program.ProgramId})">Quản lý điểm sinh viên</a>
+                        }
+                        @if (program.Status == StaticsData.CLOSE_STATUS)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterFeedback", "Programs", new{programId = program.ProgramId})">Đánh giá phản hồi</a>
+                        }
+                        <a class="nav-link" href="@Url.Action("ProgramInformation", "Programs", new{programId = program.ProgramId})">Thông tin chương trình</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <div class="row">
+                        <div class="col-xl-4 mb-4">
+                            <!-- Dashboard example card 1-->
+                            <div class="card lift h-100">
+                                <div class="card-body d-flex justify-content-center flex-column">
+                                    <div class="text-center align-items-center justify-content-between">
+                                        <div class="me-3">
+                                            <span class="text-xl text-danger mb-3">
+                                                @(listAllRegister != null && listAllRegister.Count > 0 ? listAllRegister.Count : 0)
+                                            </span>
+                                            <h5>Số lượng sinh viên đăng ký</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 mb-4">
+                            <!-- Dashboard example card 2-->
+                            <div class="card lift h-100">
+                                <div class="card-body d-flex justify-content-center flex-column">
+                                    <div class="text-center align-items-center justify-content-between">
+                                        <div class="me-3">
+                                        @{
+                                            int countRegisted = 0;
+                                            if (listAllRegister != null && listAllRegister.Count > 0)
+                                            {
+                                               
+                                                foreach (ViewRegisterProgram register in listAllRegister)
+                                                {
+                                                    if (register.RegisterStatus == StaticsData.REGISTER_ACCEPT)
+                                                    {
+                                                        countRegisted++;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                            <span class="text-xl text-primary mb-3">
+                                                @countRegisted
+                                            </span>
+
+                                            <h5>Số lượng sinh viên đang tham gia</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 mb-4">
+                            <!-- Dashboard example card 3-->
+                            <div class="card lift h-100">
+                                <div class="card-body d-flex justify-content-center flex-column">
+                                    <div class="text-center align-items-center justify-content-between">
+                                        <div class="me-3">
+                                            <a class="btn btn-lg btn-outline-primary border-primary" href="@Url.Action("UpdateProgram", "Programs", new{programId = programId})">Chỉnh sửa chương trình</a>
+                                            <a class="btn btn-lg btn-outline-green border-green" href="@Url.Action("ExportProgramData", "Excel", new{programId = programId})">Xuất dữ liệu</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xxl-8">
+                            <!-- Tabbed dashboard card example-->
+                            <div class="card mb-4">
+                                <div class="card-header border-bottom">
+                                    <!-- Dashboard card navigation-->
+                                    <ul class="nav nav-tabs card-header-tabs" id="dashboardNav" role="tablist">
+                                        <li class="nav-item"><a class="nav-link" id="activities-pill" href="#activities" data-bs-toggle="tab" role="tab" aria-controls="activities" aria-selected="false">Lịch sử thay đổi</a></li>
+                                    </ul>
+                                </div>
+                                <div class="card-body">
+                                    <table id="datatablesSimple">
+                                        <thead>
+                                            <tr>
+                                                <th>Người cập nhật</th>
+                                                <th>Lịch sử cập nhật</th>
+                                                <th>Thời gian cập nhật</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Người cập nhật</th>
+                                                <th>Lịch sử cập nhật</th>
+                                                <th>Thời gian cập nhật</th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                                    
+                                                @if(logEntries != null)
+                                                {
+                                                    foreach (LogEntry entry in logEntries)
+                                                    {
+                                            <tr>
+                                                        <td>@entry.UserUpdate</td>
+                                                        <td>@entry.Message</td>
+                                                        <td>@entry.UpdateDate</td>
+                                            </tr>
+                                                    }
+                                                } 
+                                                else
+                                                {
+                                                        <tr>
+                                                <td>None</td>
+                                                <td>None</td>
+                                                <td>None</td>
+                                        </tr>
+                                                }
+                                                    
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xxl-4">
+                            <div class="row">
+                                <div class="col-xl-6 col-xxl-12">
+                                    <!-- Programdocument-->
+                                    <div class="card mb-4">
+                                        <div class="row card-header align-items-center justify-content-between">
+                                            <div class="col-auto">Danh sách tài liệu chương trình</div>
+                                            <div class="col-12 col-xl-auto">
+                                                <a class="btn btn-outline-primary border-primary" href="@Url.Action("AddDocument","Document")">Thêm tài liệu</a>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row mb-4">
+                                                @if (listProgramDocument != null && listProgramDocument.Count > 0)
+                                                {
+                                                    int stt = 1;
+                                                    foreach (PartnerDocument doc in listProgramDocument)
+                                                    {
+                                                        <div class="col-xl-auto">
+                                                            <a class="fw-bold text-success" href="@doc.Path">@(stt + ". "+ doc.Name)</a>
+                                                        </div>
+                                                    }
+                                               
+                                                }
+                                                else
+                                                {
+                                                    <h4 class="fw-bold">Chương trình chưa có tài liệu nào</h4>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Team manager members-->
+                                    <div class="card mb-4">
+                                        <div class="row card-header align-items-center justify-content-between">
+                                            <div class="col-auto">Danh sách quản lý</div>
+                                            @{
+                                                bool checkManage = false;
+                                                if (listProgramManager != null && listProgramManager.Count > 0)
+                                                {
+                                                    foreach (ViewProgramManager pm in listProgramManager)
+                                                    {
+                                                        if (usrAccount.UserId == pm.userId || usrAccount.UserId == program.UserId)
+                                                        {
+                                                            checkManage = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            @if (checkManage)
+                                            {
+                                                <div class="col-12 col-xl-auto">
+                                                    <a class="btn btn-outline-primary border-primary" href="@Url.Action("UpdateManageProgram", "Programs", new{programId = program.ProgramId})">Thêm quản lý</a>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="card-body">
+                                            @if (listProgramManager != null && listProgramManager.Count > 0)
+                                            {
+                                                foreach (ViewProgramManager pm in listProgramManager)
+                                                {
+                                                    <div class="d-flex align-items-center justify-content-between mb-4">
+                                                        <div class="d-flex align-items-center flex-shrink-0 me-3">
+                                                            <div class="avatar avatar-xl me-3 btn-icon bg-gray-200"><img class="img-fluid" src="@pm.userImg" alt="" /></div>
+                                                            <div class="d-flex flex-column fw-bold">
+                                                                <a class="text-dark line-height-normal mb-1" href="#!">@pm.userName</a>
+                                                                @if (pm.ManageRole == 0)
+                                                                {
+                                                                    <div class="small text-muted line-height-normal">Quản lý trực tiếp</div>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <div class="small text-muted line-height-normal">Hỗ trợ quản lý</div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="dropdown no-caret">
+                                                            <button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownPeople1" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i data-feather="more-vertical"></i></button>
+                                                            <div class="dropdown-menu dropdown-menu-end animated--fade-in-up" aria-labelledby="dropdownPeople1">
+                                                                <a class="dropdown-item" href="#!">Chỉnh sửa mức độ quản lý</a>
+                                                                <a class="dropdown-item" href="#!">Xóa khỏi danh sách quản lý</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const navContainer = document.getElementById('navContainer');
+            const navLinks = navContainer.querySelectorAll('.nav-link');
+
+            // Xóa tất cả các lớp 'active' khỏi các phần tử <a>
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Kiểm tra URL hiện tại và thêm lớp 'active' cho phần tử <a> nếu khớp
+            const currentURL = window.location.href;
+            navLinks.forEach(link => {
+                if (currentURL.includes(link.getAttribute('href'))) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

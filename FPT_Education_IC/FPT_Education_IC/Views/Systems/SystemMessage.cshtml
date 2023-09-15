@@ -1,0 +1,160 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@{
+}
+
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    var userAccount = ViewBag.UserAccount as UsrAccount;
+    Dictionary<string, string> listType = new Dictionary<string, string>
+    {
+        { "Account", "Tài khoản" },
+        { "Program", "Chương trình" },
+        { "Forums", "Diễn đàn" },
+        { "Contacts", "Liên hệ" },
+        { "Other", "Các mục khác" }
+    };
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Quản lý thông báo hệ thống</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="help-circle"></i></div>
+                                        Tạo bài câu hỏi mới
+                                    </h1>
+                                </div>
+                                <div class="col-12 col-xl-auto mb-3">
+                                    <a class="btn btn-outline-primary" href="@Url.Action("ViewListFAQ", "Systems")">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Danh sách câu hỏi thường gặp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+
+                <div class="container-fluid px-4 mb-3">
+                    <div class="row gx-4">
+                        <div class="col-lg-8">
+                            <form id="questionForm" name="questionForm" method="post" action="@Url.Action("AddNewFAQ", "Systems")">
+                                <div class="card mb-4">
+                                    <div class="card-header">Chọn loại câu hỏi</div>
+                                    <div class="card-body">
+                                        <select class="form-select" style="line-height: inherit; font-size: 1rem;" id="questionType" name="questionType">
+                                            <option value="" disabled selected>Chọn loại câu hỏi:</option>
+                                            @foreach (var type in listType)
+                                            {
+                                            <option value="@type.Key">@type.Value</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="card mb-4">
+                                    <div class="card-header">Nhập câu hỏi</div>
+                                    <div class="card-body">
+                                        <input class="form-control" id="questionContent" name="questionContent" type="text" placeholder="Nhập câu hỏi..." />
+                                    </div>
+                                </div>
+                                <div class="card card-header-actions mb-4 mb-lg-0">
+                                    <div class="card-header">
+                                        Nội dung trả lời
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="editor" style="min-height: 200px;"></div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="answerContent" name="answerContent" value="" />
+                                <input type="hidden" id="updateUser" name="updateUser" value="@emrSession.userId" />
+                                <input type="hidden" id="updateDate" name="updateDate" value="@DateTime.Now" />
+                            </form>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card card-header-actions">
+                                <div class="card-header">
+                                    Tạo câu hỏi thường gặp
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid"><button class="fw-500 btn btn-primary" onclick="createNewFAQ()">Tạo FAQ</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="/js/markdown.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var quill = new Quill('#editor', {
+            theme: 'snow'
+        });
+        document.querySelector('form').addEventListener('submit', function (event) {
+            var editorContent = document.querySelector('.ql-editor').innerHTML;
+            event.preventDefault();
+        });
+
+
+        function createNewFAQ() {
+            var contentValue = document.querySelector('.ql-editor');
+            contentValue.blur();
+
+            var questionType = $('#questionType').val();
+            var questionContent = $('#questionContent').val();
+            var answerContentValue = contentValue.innerHTML;
+
+
+            if (!questionType) {
+                alert("Vui lòng chọn loại câu hỏi");
+                return;
+            }
+
+            if (!questionContent) {
+                alert("Vui nhập nội dung câu hỏi");
+                return;
+            }
+
+            if (!answerContentValue) {
+                alert("Vui nhập nội dung câu trả lời");
+                return;
+            }
+
+            var questionForm = document.getElementById('questionForm');
+            with (questionForm) {
+                answerContent.value = answerContentValue;
+                submit();
+            }
+        }
+    </script>
+</body>
+</html>

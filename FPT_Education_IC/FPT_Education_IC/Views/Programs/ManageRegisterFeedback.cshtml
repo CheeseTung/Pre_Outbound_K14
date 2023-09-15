@@ -1,0 +1,221 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    int programId = -1;
+    if (ViewBag.ProgramId != null) programId = ViewBag.ProgramId;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    Program program = programsService.getProgramById(programId);
+    RegisterService registerService = ViewBag.RegisterService;
+    CampusService campusService = ViewBag.CampusService;
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAccount = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+    ArrayList listAllRegister = registerService.GetAllProgramRegister(program.ProgramId);
+    if (listPartnerProgram == null || listPartnerProgram.Count <= 0)
+    {
+        listAllRegister = registerService.GetAllProgramNonePartnerRegister(program.ProgramId);
+    }
+    ArrayList listProgramFeedBack = registerService.GetAllProgramFeedBack(program.ProgramId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Đánh giá phản hồi chương trình</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="text-primary">
+                                        @program.Title
+                                    </h1>
+                                </div>
+                                <div class="col-auto mb-3">
+                                    <a class="btn btn-outline-primary" href="@Url.Action("ListManageProgram", "Programs")">
+                                        <i class="me-1" data-feather="arrow-left"></i>
+                                        Danh sách chương trình
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @{
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày bắt đầu: </strong><span>@program.StartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày kết thúc: </strong><span>@program.EndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="clock" style="color: brown"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày mở đăng ký: </strong><span>@program.RegisterStartDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="calendar" style="color: mediumseagreen"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Ngày đóng đăng ký: </strong><span>@program.RegisterEndDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            <div class="row">
+                                @{
+                                    if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                                    {
+                                        foreach (ViewProgramCooperation view in listPartnerProgram)
+                                        {
+                                            <div class="col-xl-auto mb-3">
+                                                <div class="location d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="map-pin" style="color: #e30059"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Quốc gia: </strong><span>@view.PartnerCountry</span>
+                                                </div>
+                                                <div class="partner-colab d-flex align-items-center">
+                                                    <i class="feather-lg" data-feather="users" style="color: #00cfd5"></i>
+                                                    <strong style="padding-left: 8px;padding-right: 5px;">Đối tác: </strong><span>@view.PartnerName</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-fluid px-4 mt-4">
+                    <!-- Account page navigation-->
+                    <nav id="navContainer" class="nav nav-borders">
+                        <a class="nav-link ms-0" href="@Url.Action("ViewProgramManage", "Programs", new{programId = program.ProgramId})">Danh sách đăng ký</a>
+                        <a class="nav-link" href="@Url.Action("ListApproveProgram", "Programs", new{programId = program.ProgramId})">Danh sách tham gia</a>
+                        @if(program.IsStudyExchange == 1)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterStudy", "Programs", new{programId = program.ProgramId})">Quản lý điểm sinh viên</a>
+                        }
+                        @if (program.Status == StaticsData.CLOSE_STATUS)
+                        {
+                            <a class="nav-link" href="@Url.Action("ManageRegisterFeedback", "Programs", new{programId = program.ProgramId})">Đánh giá phản hồi</a>
+                        }
+                        <a class="nav-link" href="@Url.Action("ProgramInformation", "Programs", new{programId = program.ProgramId})">Thông tin chương trình</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <!-- Billing history card-->
+                    <div class="card mb-4">
+                        <div class="row card-header align-items-center justify-content-between mx-0">
+                            <div class="col-auto">
+                                Danh sách đang tham gia
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive table-billing-history">
+                                <table id="datatablesSimple">
+                                <thead>
+                                    <tr>
+                                        <th>Số thứ tự</th>
+                                        <th>Mã số sinh viên</th>
+                                        <th>Họ và tên</th>
+                                        <th>Về chương trình</th>
+                                        <th>Cơ sở vật chất đối tác</th>
+                                        <th>Hỗ trợ từ đối tác</th>
+                                        <th>Hoạt động ngoại khóa</th>
+                                        <th>Hỗ trợ từ quản lý</th>
+                                        <th>Đóng góp ý kiến</th>
+                                        <th>Ngày cập nhật</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>Số thứ tự</th>
+                                        <th>Mã số sinh viên</th>
+                                        <th>Họ và tên</th>
+                                        <th>Về chương trình</th>
+                                        <th>Cơ sở vật chất đối tác</th>
+                                        <th>Hỗ trợ từ đối tác</th>
+                                        <th>Hoạt động ngoại khóa</th>
+                                        <th>Hỗ trợ từ quản lý</th>
+                                        <th>Đóng góp ý kiến</th>
+                                        <th>Ngày cập nhật</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                @if (listProgramFeedBack != null && listProgramFeedBack.Count > 0)
+                                {
+                                    int count = 1;
+                                    foreach (Feedback feedback in listProgramFeedBack)
+                                    {
+                                        UsrAccount usrFeedback = accountService.GetUsrAccountById(feedback.UserId);
+                                        <tr>
+                                            <td>@count</td>
+                                            <td>@usrFeedback.RollNumber</td>
+                                            <td>@usrFeedback.UserName</td>
+                                            <td>@feedback.ProgramContent</td>
+                                            <td>@feedback.Facilities</td>
+                                            <td>@feedback.PartnerSupport</td>
+                                            <td>@feedback.Extracurricular</td>
+                                            <td>@feedback.StaffSupport</td>
+                                            <td>@feedback.Feedback1</td>
+                                            <td>@feedback.UpdateDate.Value.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                        count++;
+                                    }
+                                }
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const navContainer = document.getElementById('navContainer');
+            const navLinks = navContainer.querySelectorAll('.nav-link');
+
+            // Xóa tất cả các lớp 'active' khỏi các phần tử <a>
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Kiểm tra URL hiện tại và thêm lớp 'active' cho phần tử <a> nếu khớp
+            const currentURL = window.location.href;
+            navLinks.forEach(link => {
+                if (currentURL.includes(link.getAttribute('href'))) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

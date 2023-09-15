@@ -1,0 +1,343 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.ViewModels;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    RegisterService registerService = ViewBag.RegisterService;
+    ArrayList listReigsterProgram = registerService.GetUserListParticipationProgram(emrSession.userId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Chương trình đã tham gia</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+ <div id="layoutSidenav_content">
+    <main>
+        <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+            <div class="container-xl px-4">
+                <div class="page-header-content">
+                    <div class="row align-items-center justify-content-between pt-3">
+                        <div class="col-auto mb-3">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="grid"></i></div>
+                                Chương trình của tôi
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container-xl px-4">
+            <!-- Account page navigation-->
+            <nav class="nav nav-borders">
+                <a class="nav-link" href="@Url.Action("ViewRegisterProgram", "UserProgram")">Đang đăng ký</a>
+                <a class="nav-link" href="@Url.Action("ViewParticipatingProgram", "UserProgram")">Đang tham gia</a>
+                <a class="nav-link" href="@Url.Action("ViewParticipationProgram", "UserProgram")">Đã tham gia</a>
+            </nav>
+            <hr class="mt-0 mb-4" />
+            <div class="row gx-5">
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label class="form-check-label" for="stDate">Ngày bắt đầu</label>
+                        <input class="form-control" type="date" id="stDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label class="form-check-label" for="endDate">Ngày kết thúc</label>
+                        <input class="form-control" type="date" id="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-check-label" for="search">Tìm kiếm</label>
+                        <div class="input-group input-group-joined">
+                            <input class="form-control pe-0" type="search" placeholder="Tìm kiếm..." aria-label="Search" />
+                            <div class="input-group-text search-icon" onclick="searchConditionSubmit()"><i data-feather="search"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if (listReigsterProgram != null && listReigsterProgram.Count > 0) {
+            <hr class="mt-0 mb-3" />
+            <div class="row mb-3">
+                    @foreach (ViewUserReigisterProgram view in listReigsterProgram)
+                    {
+                    <div class="col-sm-6 col-md-4 col-xl-3 mb-4">
+                        <div class="card card-body">
+                            <a class="d-block lift rounded overflow-hidden mb-2" href="@Url.Action("ViewProgramDetails", "Programs", new{programId = view.Programs.ProgramId})"><img class="img-fluid program-manage-img" src="@view.Programs.Image" alt="..." /></a>
+                            <div class="pb-3">
+                                <span class="badge bg-dark">Chương trình đã kết thúc</span>
+                            </div>
+                            <h5 class="mt-1 page-header-title"><a href="@Url.Action("ViewProgramDetails", "Programs", new{programId = view.Programs.ProgramId})">@view.Programs.Title</a></h5>
+                            <div class="location">
+                                <i data-feather="map-pin"></i>
+                                <span style="padding-left: 8px;">Mở đăng ký: @view.Programs.RegisterStartDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="partner-colab">
+                                <i data-feather="users"></i>
+                                <span style="padding-left: 8px;">Hạn đăng ký: @view.Programs.RegisterEndDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="start-time">
+                                <i data-feather="clock"></i>
+                                <span style="padding-left: 8px;">Bắt đầu: @view.Programs.StartDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="end-time">
+                                <i data-feather="calendar"></i>
+                                <span style="padding-left: 8px;">Kết thúc: @view.Programs.EndDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="row d-flex justify-content-center p-2">
+                                @if (!registerService.CheckUserFeedback(view.Registers.ProgramId, view.Registers.UserId)) {
+                                    <div class="col-6">
+                                        <button class="btn btn-sm btn-outline-orange" data-bs-toggle="modal" data-bs-target="#FeedbackModal">Đánh giá chương trình</button>
+                                    </div>
+                                    <div class="col-6">
+                                        <a class="btn btn-sm btn-outline-success" href="@Url.Action("ViewForumDetails", "Forums", new{programId = view.Registers.ProgramId, registerId = view.Registers.RegisterId})">Truy cập diễn đàn</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-auto">
+                                        <a class="btn btn-sm btn-outline-success" href="@Url.Action("ViewForumDetails", "Forums", new{programId = view.Registers.ProgramId, registerId = view.Registers.RegisterId})">Truy cập diễn đàn</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="FeedbackModal" tabindex="-1" role="dialog" aria-labelledby="FeedbackModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" style="max-width: 650px !important;" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="FeedbackModalLabel">Đánh giá chất lượng chương trình</h5>
+                                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-primary">@view.Programs.Title</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="mb-1 fw-bold pe-2">Mức độ hài lòng của bạn về nội dung chương trình:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="programContent" value="5" checked="">
+                                            <label class="form-check-label">Rất hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="programContent" value="4">
+                                            <label class="form-check-label">Hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="programContent" value="3">
+                                            <label class="form-check-label">Bình thường</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="programContent" value="2">
+                                            <label class="form-check-label">Không hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="programContent" value="1">
+                                            <label class="form-check-label">Hoàn toàn không hài lòng</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="mb-1 fw-bold pe-2">Mức độ hài lòng của bạn về cơ sở vật chất của trường đối tác:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerFacilities" value="5" checked="">
+                                            <label class="form-check-label">Rất hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerFacilities" value="4">
+                                            <label class="form-check-label">Hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerFacilities" value="3">
+                                            <label class="form-check-label">Bình thường</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerFacilities" value="2">
+                                            <label class="form-check-label">Không hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerFacilities" value="1">
+                                            <label class="form-check-label">Hoàn toàn không hài lòng</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="mb-1 fw-bold pe-2">Mức độ hài lòng của bạn về sự hỗ trợ từ trường đối tác:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerSupport" value="5" checked="">
+                                            <label class="form-check-label">Rất hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerSupport" value="4">
+                                            <label class="form-check-label">Hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerSupport" value="3">
+                                            <label class="form-check-label">Bình thường</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerSupport" value="2">
+                                            <label class="form-check-label">Không hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="partnerSupport" value="1">
+                                            <label class="form-check-label">Hoàn toàn không hài lòng</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="mb-1 fw-bold pe-2">Mức độ hài lòng của bạn về các hoạt động ngoại khóa của chương trình:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extracurricular" value="5" checked="">
+                                            <label class="form-check-label">Rất hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extracurricular" value="4">
+                                            <label class="form-check-label">Hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extracurricular" value="3">
+                                            <label class="form-check-label">Bình thường</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="extracurricular" value="2">
+                                            <label class="form-check-label">Không hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="programContent" value="1">
+                                            <label class="form-check-label">Hoàn toàn không hài lòng</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="mb-1 fw-bold pe-2">Mức độ hài lòng của bạn về sự hỗ trợ từ anh/chị quản lý chương trình:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="staffSupport" value="5" checked="">
+                                            <label class="form-check-label">Rất hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="staffSupport" value="4">
+                                            <label class="form-check-label">Hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="staffSupport" value="3">
+                                            <label class="form-check-label">Bình thường</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="staffSupport" value="2">
+                                            <label class="form-check-label">Không hài lòng</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="staffSupport" value="1">
+                                            <label class="form-check-label">Hoàn toàn không hài lòng</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="mb-1 fw-bold pe-2" for="feedbackMore">Bạn có góp ý gì cho chương trình và ban tổ chức không?</label>
+                                        <textarea class="form-control" id="feedbackMore" name="feedbackMore" style="line-height: 1.5"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h3 class="text-orange">Cảm ơn bạn đã tham gia chương trình! Hẹn gặp lại bạn ở các chương trình tiếp theo nhé!</h3>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" type="button" onclick="SubmitFeedback('@view.Registers.ProgramId', '@view.Registers.UserId')">Gửi đánh giá</button>
+                                    <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Thoát</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+            </div>
+            }
+        </div>
+    </main>
+        @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+        function SubmitFeedback(programId, userId){
+
+            var programContent = $('input[name=programContent]:checked').val();
+            var partnerFacilities = $('input[name=partnerFacilities]:checked').val();
+            var partnerSupport = $('input[name=partnerSupport]:checked').val();
+            var extracurricular = $('input[name=extracurricular]:checked').val();
+            var staffSupport = $('input[name=staffSupport]:checked').val();
+            var feedbackMore = $('#feedbackMore').val();
+
+            if (programContent && programContent.trim() == '') {
+                showAlert('Vui lòng đánh giá về nội dung chương trình', 'warning');
+                return;
+            }
+            if (partnerFacilities && partnerFacilities.trim() == '') {
+                showAlert('Vui lòng đánh giá về cơ sở vật chất của trường đối tác', 'warning');
+                return;
+            }
+            if (partnerSupport && partnerSupport.trim() == '') {
+                showAlert('Vui lòng đánh giá về sự hỗ trờ từ trường đối tác', 'warning');
+                return;
+            }
+            if (extracurricular && extracurricular.trim() == '') {
+                showAlert('Vui lòng đánh giá về các hoạt động ngoại khóa của chương trình', 'warning');
+                return;
+            }
+            if (staffSupport && staffSupport.trim() == '') {
+                showAlert('Vui lòng đánh giá về sự hỗ trợ từ anh/chị quản lý chương trình', 'warning');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("programId", programId);
+            formData.append("userId", userId);
+            formData.append("programContent", programContent);
+            formData.append("partnerFacilities", partnerFacilities);
+            formData.append("partnerSupport", partnerSupport);
+            formData.append("extracurricular", extracurricular);
+            formData.append("staffSupport", staffSupport);
+            formData.append("feedbackMore", feedbackMore);
+
+            $.ajax({
+                url: "/UserProgram/AddProgramFeedback",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã gửi đánh giá chương trình thành công. Cảm ơn bạn đã tham gia chương trình.', "success");
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+
+        }
+
+    </script>
+</body>
+</html>

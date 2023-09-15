@@ -1,0 +1,163 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAcc = accountService.GetUsrAccountById(emrSession.userId);
+    CountryService countryService = ViewBag.CountryService;
+    PartnerService partnerService = ViewBag.PartnerService;
+    ArrayList listPartner = partnerService.ListParnertsManage();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Phê duyệt đối tác</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+
+    <main>
+        <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+            <div class="container-fluid px-4">
+                <div class="page-header-content">
+                    <div class="row align-items-center justify-content-between pt-3">
+                        <div class="col-auto mb-3">
+                            <h1 class="page-header-title"><i class="page-header-icon" data-feather="users"></i>
+                                Quản lý đối tác
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container-fluid px-4 mt-4">
+            <nav class="nav nav-borders">
+                <a class="nav-link ms-0" href="@Url.Action("AddPartner", "Partner")">Thêm đối tác</a>
+                <a class="nav-link" href="@Url.Action("ManagePartner", "Partner")">Danh sách đối tác</a>
+                <a class="nav-link" href="@Url.Action("RequestPartner", "Partner")">Đối tác chờ phê duyệt</a>
+            </nav>
+            <hr class="mt-0 mb-4" />
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-end">
+                    <a class="btn btn-outline-primary border-primary me-3" href="@Url.Action("AddPartner", "Partner")">Thêm đối tác mới</a>
+                </div> 
+                <div class="card-body">
+                    <table id="datatablesSimple">
+                        <thead class="">
+                                                        <tr>
+                                <th>STT</th>
+                                <th>Tên đối tác</th>
+                                <th>Quốc gia</th>
+                                <th>Email</th>
+                                <th>Số chương trình</th>
+                                <th>Ngày hợp tác</th>
+                                <th>Chịu trách nhiệm</th>
+                                <th>Trạng thái</th>
+                                <th>Tùy chọn</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên đối tác</th>
+                                <th>Quốc gia</th>
+                                <th>Email</th>
+                                <th>Số chương trình</th>
+                                <th>Ngày hợp tác</th>
+                                <th>Chịu trách nhiệm</th>
+                                <th>Trạng thái</th>
+                                <th>Tùy chọn</th>
+                            </tr>
+                        </tfoot>
+
+                        <tbody>
+                            @if (listPartner != null && listPartner.Count > 0) {        
+                                int stt = 1;
+                                foreach (ManagePartnerModel item in listPartner)
+                                {
+                                    if (!item.Status)
+                                    {
+
+                                        <tr>
+                                            <td>@stt</td>
+                                            <td>@item.partnerName</td>
+                                            <td>@item.Country</td>
+                                            <td>@item.Email</td>
+                                            <td>
+                                                <a href="">@partnerService.GetNumberPartnerProgram(item.partnerID) Chương trình</a>
+                                            </td>
+                                            <td>
+                                                @item.StDate.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td>@item.ReUser</td>
+                                            <td>
+                                                <span class="badge bg-primary">Chờ phê duyệt</span>
+                                            </td>
+                                            <td>
+                                                @if (usrAcc.Role.Equals(StaticsData.ADMIN_ROLE) || usrAcc.Role.Equals(StaticsData.SUPER_ADMIN_ROLE))
+                                                {
+                                                    <button class="btn btn-sm btn-outline-success" onclick="ApprovePartner('@item.partnerID')">Phê duyệt</button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="DeletePartner('@item.partnerID)">Xóa</button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                stt++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
+    <script src="/js/datatables/datatables-simple-demo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function ApprovePartner(partnerId) {
+            
+            $.ajax({
+                type: "POST",
+                url: "/Partner/ApprovePartner",
+                data: { partnerId: partnerId },
+                success: async function (data) {
+                    if (data.success) {
+                        await showAlert('Đã phê duyệt đối tác thành công', "success");
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using FPT_Education_IC.Statics;
+@using FPT_Education_IC.ViewModels;
+@using System.Collections;
+@{
+    var emrSession = ViewBag.EmrSession as EmrSession;
+    int programId = -1;
+    if (ViewBag.ProgramId != null) programId = ViewBag.ProgramId;
+    ProgramsService programsService = ViewBag.ProgramsService;
+    Program program = programsService.getProgramById(programId);
+    RegisterService registerService = ViewBag.RegisterService;
+    Register register = registerService.getUserRegister(programId, emrSession.userId);
+    AccountService accountService = ViewBag.AccountService;
+    UsrAccount usrAccount = accountService.GetUsrAccountById(emrSession.userId);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Chi tiết chương trình</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-xl px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="grid"></i></div>
+                                        Chi tiết chương trình
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <!-- Main page content-->
+                <div class="container-xl px-4">
+                    <h1 class="mt-2 page-header-title text-primary" style="font-size: 2.25rem !important">@program.Title</h1>
+                    <hr class="mt-0 mb-3" />
+                    <div class="row mb-3">
+                        <div class="col-xl-3">
+                            <div class="start-time d-flex align-items-center">
+                                <i class="feather-lg" data-feather="clock" style="color: #009259"></i>
+                                <strong style="padding-left: 8px;padding-right: 5px;">Bắt đầu: </strong><span>@program.StartDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="end-time d-flex align-items-center">
+                                <i class="feather-lg" data-feather="calendar" style="color: #c51200"></i>
+                                <strong style="padding-left: 8px;padding-right: 5px;">Kết thúc: </strong><span>@program.EndDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                        <div class="col-xl-3">
+                            <div class="start-time d-flex align-items-center">
+                                <i class="feather-lg" data-feather="clock" style="color: #009259"></i>
+                                <strong style="padding-left: 8px;padding-right: 5px;">Mở đăng ký: </strong><span>@program.RegisterStartDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div class="end-time d-flex align-items-center">
+                                <i class="feather-lg" data-feather="calendar" style="color: #c51200"></i>
+                                <strong style="padding-left: 8px;padding-right: 5px;">Đóng đăng ký: </strong><span>@program.RegisterEndDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                        <div class="col-xl-3"></div>
+                        <div class="col-xl-3">
+                            <div class="location mb-2">
+                                @if (program.Status == StaticsData.CREATE_STATUS && !emrSession.userRole.Equals(StaticsData.DEFAULT_ROLE))
+                                {
+                                    <a class="btn btn-primary" href="@Url.Action("ListRequestPrograms", "Programs")">
+                                        <span>Danh sách chờ phê duyệt</span>
+                                    </a>
+                                }
+                                else if (program.Status == StaticsData.START_STATUS)
+                                {
+                                <a class="btn btn-green" href="@Url.Action("HomePage", "Home")">
+                                        <span>Mở đăng ký</span>
+                                </a>
+                                }
+                                else if (program.Status == StaticsData.PROCESS_STATUS || program.Status == StaticsData.HAPPEN_STATUS)
+                                {
+                                <a class="btn btn-pink" href="@Url.Action("HomePage", "Home")">
+                                    <span>Đang diễn ra</span>
+                                </a>
+                                }
+                                else
+                                {
+                                <a class="btn btn-dark" href="@Url.Action("HomePage", "Home")">
+                                    <span>Đã kết thúc</span>
+                                </a>
+                                }
+                            </div>
+                            <div class="location">
+                                <strong>@programsService.getTotalRegisterProgram(program.ProgramId) người đã đăng ký</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Account page navigation-->
+                        @{
+                            CountryService countryService = ViewBag.CountryService;
+                            ArrayList listPartnerProgram = programsService.getListPartnerProgram(program.ProgramId);
+                            if (listPartnerProgram != null && listPartnerProgram.Count > 0)
+                            {
+                                foreach (ViewProgramCooperation view in listPartnerProgram)
+                                {
+                                    <div class="col-xl-auto mb-3">
+                                        <div class="location d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="map-pin" style="color: #e30059"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Quốc gia: </strong><span>@view.PartnerCountry</span>
+                                        </div>
+                                        <div class="partner-colab d-flex align-items-center">
+                                            <i class="feather-lg" data-feather="users" style="color: #00cfd5"></i>
+                                            <strong style="padding-left: 8px;padding-right: 5px;">Đối tác: </strong><span>@view.PartnerName</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else if (program.IsStudyExchange == 0)
+                            {
+                                <div class="col-xl-auto mb-3">
+                                    <div class="location d-flex align-items-center">
+                                        <i class="feather-lg" data-feather="map-pin" style="color: #e30059"></i>
+                                        <strong style="padding-left: 8px;padding-right: 5px;">Quốc gia: </strong><span>@countryService.GetCountryName(program.Country)</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <hr class="mt-3 mb-4" />
+                    <!-- Billing history card-->
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <!-- Account details card-->
+                            <div class="card mb-4">
+                                <div class="row card-header align-items-center justify-content-between mx-0">
+                                    <div class="col-auto">
+                                        CHI TIẾT CHƯƠNG TRÌNH
+                                    </div>
+                                    <div class="col-12 col-xl-auto">
+                                        @if (program.IsStudyExchange == 1)
+                                        {
+                                            <a class="btn btn-light btn-teal" href="@Url.Action("HomePage", "Home")">
+                                                Trao đổi học tập
+                                            </a>
+                                        }
+                                        else if (program.IsStudyExchange == 2)
+                                        {
+                                            <a class="btn btn-light btn-orange" href="@Url.Action("HomePage", "Home")">
+                                                Trao đổi văn hóa
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-light btn-pink" href="@Url.Action("HomePage", "Home")">
+                                                Other
+                                            </a>
+                                        }
+                                        
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="sbp-preview-content">
+                                        <div class="d-flex justify-content-center mb-4">
+                                            <img class="img-fluid" src="@program.Image" />
+                                        </div>
+                                        <div class="justify-content-center mb-4 px-4">
+                                            @Html.Raw(program.Description)
+                                        </div>
+                                        <hr class="mt-3 mb-3" />
+                                        <div class="row px-4">
+                                            <div class="location mb-2 d-flex align-items-center">
+                                                <i class="feather-lg" data-feather="user-check" style="color:indianred"></i>
+                                                <strong style="padding-left: 8px;padding-right: 5px;">Đối tượng tham gia: </strong><span>@program.Participants</span>
+                                            </div>
+                                            <div class="col-xl-7">
+                                                
+                                                @if (program.IsStudyExchange == 1)
+                                                {
+                                                    <div class="location d-flex align-items-center">
+                                                        <strong style="padding-right: 5px;">Các môn học áp dụng: </strong><span>@programsService.getListProgramSubject(programId)</span>
+                                                    </div>
+                                                }
+                                                <div class="location d-flex align-items-center">
+                                                    <strong style="padding-right: 5px;">Link facebook: </strong><a href="@program.FaceBookLink" title="@program.FaceBookLink" target="_blank">@program.FaceBookLink</a>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-5">
+                                                @if (program.PaymentValue != null && program.PaymentValue > 0)
+                                                {
+                                                    <div class="location d-flex align-items-center">
+                                                        <strong style="padding-right: 5px;">Chi phí tham gia: </strong><span>@StaticsData.FormatCurrency(program.PaymentValue)</span>
+                                                    </div>
+                                                    <div class="location d-flex align-items-center">
+                                                        <strong style="padding-right: 5px;">Bắt đầu đóng phí: </strong><span> @program.PaymentStartDate.Value.ToString("dd/MM/yyyy")</span>
+                                                    </div>
+                                                    <div class="location d-flex align-items-center">
+                                                        <strong style="padding-right: 5px;">Kết thúc đóng phí: </strong><span> @program.PaymentEndDate.Value.ToString("dd/MM/yyyy")</span>
+                                                    </div>
+                                                    <div class="location d-flex align-items-center">
+                                                        <strong style="padding-right: 5px;">Chi tiết đóng phí: </strong><span>@program.PaymentDescription</span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="location d-flex align-items-center">
+                                                        <strong style="padding-right: 5px;">Chi phí tham gia: </strong><span>Không có chi phí tham gia</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <hr class="mt-3 mb-3" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card mb-4">
+                                <div class="card-header">Tham gia chương trình</div>
+                                <div class="card-body justify-content-center">
+                                    <div class="row justify-content-center">
+                                        @if (!User.Identity.IsAuthenticated || string.IsNullOrEmpty(emrSession.userIdIdentity.Trim()) || (emrSession != null && emrSession.userRole.Equals(StaticsData.DEFAULT_ROLE) && register == null))
+                                        {
+                                            if (program.Status == StaticsData.START_STATUS)
+                                            {
+                                                <div class="col-2 col-xl-auto justify-content-center">
+                                                    <a class="btn btn-lg btn-light btn-orange" href="@Url.Action("RegisterProgram", "Programs", new{programId = programId})">
+                                                        Đăng ký tham gia ngay
+                                                    </a>
+                                                </div>
+                                            }
+                                            else if (program.Status == StaticsData.PROCESS_STATUS || program.Status == StaticsData.HAPPEN_STATUS)
+                                            {
+                                                <div class="col-2 col-xl-auto justify-content-center">
+                                                    <button class="btn btn-lg btn-outline-teal border-teal">
+                                                        Chương trình đang diễn ra
+                                                    </button>
+                                                </div>
+                                            }
+                                            else if (program.Status == StaticsData.CLOSE_STATUS)
+                                            {
+                                                <div class="col-2 col-xl-auto justify-content-center">
+                                                    <button class="btn btn-lg btn-outline-dark border-dark">
+                                                        Chương trình đã kết thúc
+                                                    </button>
+                                                </div>
+                                            }
+                                        }
+                                        else if (usrAccount.Role != null && usrAccount.Role.Equals(StaticsData.DEFAULT_ROLE) && register != null)
+                                        {
+                                            // Chương trình mở đăng ký
+                                            if (program.Status == StaticsData.START_STATUS || program.Status == StaticsData.PROCESS_STATUS)
+                                            {
+                                                // đơn đăng ký đang chờ duyệt - chưa xử lý
+                                                if (register.RegisterStatus == StaticsData.REGISTER_REQUEST)
+                                                {
+                                                    <div class="col-2 col-xl-auto justify-content-center">
+                                                        <a class="btn btn-lg btn-outline-primary boder-primary" href="@Url.Action("ViewRegisterProgram", "Programs", new{programId = program.ProgramId, registerId = register.RegisterId})">
+                                                            Cập nhật đơn đăng ký
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-2 col-xl-auto justify-content-center">
+                                                        <button class="btn btn-lg btn-outline-red border-red" data-bs-toggle="modal" data-bs-target="#addCancelRegisterModal">
+                                                            Hủy đăng ký
+                                                        </button>
+                                                    </div>
+
+                                                } // Đơn đăng ký đã được chấp nhận để cập nhật hồ sơ
+                                                else if (register.RegisterStatus == StaticsData.REGISTER_PENDING || register.RegisterStatus == StaticsData.REGISTER_ACCEPT)
+                                                {
+                                                    <div class="col-2 col-xl-auto justify-content-center">
+                                                        <a class="btn btn-lg btn-outline-primary boder-primary" href="@Url.Action("ViewRegisterProgram", "Programs", new{programId = program.ProgramId, registerId = register.RegisterId})">
+                                                            Yêu cầu cập nhật đơn đăng ký
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-2 col-xl-auto justify-content-center">
+                                                        <a class="btn btn-lg btn-outline-red border-red" data-bs-toggle="modal" data-bs-target="#addCancelRegisterModal">
+                                                            Yêu cầu hủy đăng ký
+                                                        </a>
+                                                    </div>
+
+                                                } // Đơn đã bị hủy - xem lý do
+                                                else if (register.RegisterStatus == StaticsData.REGISTER_CANCEL)
+                                                {
+                                                    <div class="col-2 col-xl-auto justify-content-center">
+                                                        <a class="btn btn-lg btn-outline-red boder-red" href="">
+                                                            Đã hủy đăng ký
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-2 col-xl-auto justify-content-center">
+                                                        <a class="btn btn-lg btn-outline-primary border-primary" data-bs-toggle="modal" data-bs-target="#viewCancelRegisterModal">
+                                                            Xem nguyên nhân hủy
+                                                        </a>
+                                                    </div>
+                                                }
+                                            }
+                                            else if (program.Status == StaticsData.HAPPEN_STATUS)
+                                            {
+                                                <div class="col-2 col-xl-auto justify-content-center">
+                                                    <button class="btn btn-lg btn-outline-teal border-teal">
+                                                        Chương trình đang diễn ra
+                                                    </button>
+                                                </div>
+                                                <div class="col-2 col-xl-auto justify-content-center">
+                                                    <a class="btn btn-lg btn-outline-primary boder-primary" href="@Url.Action("ViewParticipatingProgram", "UserProgram")">
+                                                        Chương trình của bạn
+                                                    </a>
+                                                </div>
+                                            }
+                                            else if (program.Status == StaticsData.CLOSE_STATUS)
+                                            {
+                                                <div class="col-2 col-xl-auto justify-content-center">
+                                                    <button class="btn btn-lg btn-outline-dark border-dark">
+                                                        Chương trình đã kết thúc
+                                                    </button>
+                                                </div>
+                                                <div class="col-2 col-xl-auto justify-content-center">
+                                                    <a class="btn btn-lg btn-outline-primary boder-primary" href="@Url.Action("ViewParticipationProgram", "UserProgram")">
+                                                        Chương trình của bạn
+                                                    </a>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="addCancelRegisterModal" tabindex="-1" role="dialog" aria-labelledby="addCancelRegisterModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addCancelRegisterModalLabel">Hủy đăng ký tham gia chương trình</h5>
+                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-2">
+                                    <label class="mb-1 small" for="CancelRegisterReasonAdd">Nhập lý do hủy đăng ký</label>
+                                    <textarea class="form-control" id="CancelRegisterReasonAdd" placeholder="Nhập lý do hủy đăng ký..." ></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Thoát</button>
+                                @if (register != null)
+                                {
+                                    <button class="btn btn-primary-soft text-primary" type="button" id="cancelRegisterButton" onclick="CancelRegisterProgram('@program.ProgramId', '@register.RegisterId', '@register.RegisterStatus')">Hủy đăng ký</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="viewCancelRegisterModal" tabindex="-1" role="dialog" aria-labelledby="viewCancelRegisterLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewCancelRegisterLabel">Lý do hủy đăng ký tham gia chương trình</h5>
+                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-2">
+                                    <label class="mb-1 small" for="CancelRegisterReason">Lý do hủy đăng ký</label>
+                                    @if (register != null)
+                                    {
+                                        <textarea class="form-control" id="CancelRegisterReason" style="line-height: 1.5">@register.RequestCancel</textarea>
+                                    }
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger-soft text-danger" type="button" data-bs-dismiss="modal">Thoát</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function CancelRegisterProgram(programId, registerId, status) {
+
+            var formData = new FormData();
+            var reasonCalcel = document.getElementById("CancelRegisterReasonAdd");
+            if (reasonCalcel) {
+                formData.append("reasonCalcel", reasonCalcel.value);
+            }
+            formData.append("programId", programId);
+            formData.append("registerId", registerId);
+            formData.append("registerStatus", status);
+
+            $.ajax({
+                url: "/Programs/CancelRegisterProgram",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function (data) {
+                    if (data.success) {
+                        if (status == 0) {
+                            await showAlert('Đã hủy đăng ký chương trình thành công', "success");
+                        } else {
+                            await showAlert('Đã yêu cầu hủy đăng ký chương trình thành công. Vui lòng chờ quản trị viên phê duyệt', "success");
+                        }
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                    }
+                },
+                error: async function (xhr, status, error) {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

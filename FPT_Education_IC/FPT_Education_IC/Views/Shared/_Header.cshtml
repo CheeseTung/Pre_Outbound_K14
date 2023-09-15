@@ -1,0 +1,112 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.Service;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    AccountService accountService = ViewBag.AccountService;
+    SystemsService systemsService = ViewBag.SystemsService;
+   
+    UsrAccount usr = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listUsrNoti = systemsService.GetListUsrNotification(usr.UserId);
+    Boolean checklogin = false;
+    if (User.Identity.IsAuthenticated && emrSession != null && !string.IsNullOrEmpty(emrSession.userIdIdentity))
+    {
+        checklogin = true;
+    }
+}
+<!--Header-->
+<nav class="topnav navbar navbar-expand shadow justify-content-between justify-content-sm-start navbar-light bg-white" id="sidenavAccordion">
+    <!-- Sidenav Toggle Button-->
+    <button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 me-2 ms-lg-2 me-lg-0" id="sidebarToggle"><i data-feather="menu"></i></button>
+    <!-- Navbar Brand-->
+    <a class="navbar-brand pe-3 ps-4 ps-lg-2" href="@Url.Action("HomePage", "Home")">FPTE IC</a>
+    <!-- Navbar Items-->
+    <ul class="navbar-nav align-items-center ms-auto">
+        <!-- Role Information-->
+        @if (checklogin && !"User".Equals(usr.Role))
+        {
+            <li class="nav-item dropdown no-caret d-none d-md-block me-3">
+                <a class="nav-link"><div class="fw-500">@usr.Role</div></a>
+            </li>
+        }
+        <!-- Navbar Search Dropdown-->
+        <!-- * * Note: * * Visible only below the lg breakpoint-->
+        <li class="nav-item dropdown no-caret me-3 d-lg-none">
+            <a class="btn btn-icon btn-transparent-dark dropdown-toggle" id="searchDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i data-feather="search"></i></a>
+            <!-- Dropdown - Search-->
+            <div class="dropdown-menu dropdown-menu-end p-3 shadow animated--fade-in-up" aria-labelledby="searchDropdown">
+                <form class="form-inline me-auto w-100">
+                    <div class="input-group input-group-joined input-group-solid">
+                        <input class="form-control pe-0" type="text" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" />
+                        <div class="input-group-text"><i data-feather="search"></i></div>
+                    </div>
+                </form>
+            </div>
+        </li>
+        @if (checklogin)
+        {
+            <!-- Alerts Dropdown-->
+            <li class="nav-item dropdown no-caret d-none d-sm-block me-3 dropdown-notifications">
+                <a class="btn btn-icon btn-transparent-dark dropdown-toggle" id="navbarDropdownAlerts" href="javascript:void(0);" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i data-feather="bell"></i></a>
+                <div class="dropdown-menu dropdown-menu-end border-0 shadow animated--fade-in-up" aria-labelledby="navbarDropdownAlerts">
+                    <h6 class="dropdown-header dropdown-notifications-header">
+                        <i class="me-2" data-feather="bell"></i>
+                        Thông báo
+                    </h6>
+                    @if (listUsrNoti != null && listUsrNoti.Count > 0)
+                    {
+                        foreach (Notification noti in listUsrNoti)
+                        {
+                            <div class="dropdown-item dropdown-notifications-item">
+                                <div class="dropdown-notifications-item-content">
+                                    <div class="dropdown-notifications-item-content-details">@noti.UpdateDate</div>
+                                    <div class="dropdown-notifications-item-content-text">@noti.NotiContent</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="dropdown-item dropdown-notifications-item">
+                            <div class="dropdown-notifications-item-content">
+                                <div class="dropdown-notifications-item-content-details"></div>
+                                <div class="dropdown-notifications-item-content-text">Bạn chưa có thông báo nào</div>
+                            </div>
+                        </div>
+                    }
+
+                    <a class="dropdown-item dropdown-notifications-footer" href="@Url.Action("UserNotification", "Account")">Xem tất cả thông báo</a>
+                </div>
+            </li>
+            <!-- User Dropdown-->
+            <li class="nav-item dropdown no-caret dropdown-user me-3 me-lg-4">
+                <a class="btn btn-icon btn-transparent-dark dropdown-toggle" id="navbarDropdownUserImage" href="javascript:void(0);" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img class="img-fluid" src="@usr.Image" /></a>
+            <div class="dropdown-menu dropdown-menu-end border-0 shadow animated--fade-in-up" aria-labelledby="navbarDropdownUserImage">
+                <h6 class="dropdown-header d-flex align-items-center">
+                    <img class="dropdown-user-img" src="@usr.Image" />
+                    <div class="dropdown-user-details">
+                            <div class="dropdown-user-details-name">@usr.UserName</div>
+                        <div class="dropdown-user-details-email">@usr.Email</div>
+                    </div>
+                </h6>
+                <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="@Url.Action("AccountProfile", "Account")">
+                    <div class="dropdown-item-icon"><i data-feather="settings"></i></div>
+                    Account
+                </a>
+                    <a class="dropdown-item" href="@Url.Action("Logout", "Account")">
+                    <div class="dropdown-item-icon"><i data-feather="log-out"></i></div>
+                    Logout
+                </a>
+            </div>
+            </li>
+        } else
+        {
+            <li class="nav-item dropdown me-3 me-lg-4">
+                <a class="login-container" href="@Url.Action("Login", "Account")">Login</a>
+            </li>
+        }
+    </ul>
+</nav>

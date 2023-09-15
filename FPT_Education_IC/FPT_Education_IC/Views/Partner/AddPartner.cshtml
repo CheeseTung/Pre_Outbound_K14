@@ -1,0 +1,647 @@
+﻿@using FPT_Education_IC.Data;
+@using FPT_Education_IC.Models;
+@using FPT_Education_IC.ViewModels;
+@using FPT_Education_IC.Controllers;
+@using FPT_Education_IC.Service;
+@using System.Collections;
+@{
+    EmrSession emrSession = ViewBag.EmrSession;
+    AccountService accountService = ViewBag.AccountService;
+    ManagementService managementService = ViewBag.ManagementService;
+    CountryService countryService = ViewBag.CountryService;
+    UsrAccount usrAcc = accountService.GetUsrAccountById(emrSession.userId);
+    ArrayList listAccManage = managementService.getAllUsrAccountManage(usrAcc.UserId);
+    ArrayList listCountry = countryService.getAllCountry();
+    int count = 0;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Thêm đối tác</title>
+    <link href="/css/styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.png" />
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        #file-input {
+            display: none;
+        }
+
+        ul {
+            list-style: none;
+        }
+    </style>
+
+</head>
+<body class="nav-fixed">
+    @Html.Partial("_Header" , emrSession)
+    <div id="layoutSidenav">
+        @Html.Partial("_Menu", emrSession)
+        <div id="layoutSidenav_content">
+            <main>
+                <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                    <div class="container-fluid px-4">
+                        <div class="page-header-content">
+                            <div class="row align-items-center justify-content-between pt-3">
+                                <div class="col-auto mb-3">
+                                    <h1 class="page-header-title">
+                                        <div class="page-header-icon"><i data-feather="users"></i></div>
+                                        Quản lý đối tác
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                    <!-- Main page content-->
+                <div class="container-fluid px-4 mt-4">
+                    <nav class="nav nav-borders">
+                    <a class="nav-link ms-0" href="@Url.Action("AddPartner", "Partner")">Thêm mới đối tác</a>
+                    <a class="nav-link" href="@Url.Action("ManagePartner", "Partner")">Danh sách đối tác</a>
+                    <a class="nav-link" href="@Url.Action("RequestPartner", "Partner")">Đối tác chờ phê duyệt</a>
+                    </nav>
+                    <hr class="mt-0 mb-4" />
+                    <!-- Wizard card example with navigation-->
+                    <div class="card mb-4">
+                        <div class="card-header border-bottom">
+                            <!-- Wizard navigation-->
+                            <div class="nav nav-pills nav-justified flex-column flex-xl-row nav-wizard" id="cardTab" role="tablist">
+                                <!-- Wizard navigation item 1-->
+                                <a class="nav-item nav-link active" id="wizard1-tab" href="#wizard1" data-bs-toggle="tab" role="tab" aria-controls="wizard1" aria-selected="true">
+                                    <div class="wizard-step-icon">1</div>
+                                    <div class="wizard-step-text">
+                                        <div class="wizard-step-text-name">Thông tin đối tác</div>
+                                    </div>
+                                </a>
+                                <!-- Wizard navigation item 2-->
+                                <a class="nav-item nav-link" id="wizard2-tab" href="#wizard2" data-bs-toggle="tab" role="tab" aria-controls="wizard2" aria-selected="true">
+                                    <div class="wizard-step-icon">2</div>
+                                    <div class="wizard-step-text">
+                                        <div class="wizard-step-text-name">Thông tin liên hệ với đối tác</div>
+                                    </div>
+                                </a>
+
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content" id="cardTabContent">
+                                <!-- Wizard tab pane item 1-->
+                                <div class="tab-pane fade show active" id="wizard1" role="tabpanel" aria-labelledby="wizard1-tab">
+                                    <div class="row justify-content-center">
+                                        <div class="col-xxl-10 col-xl-12">
+
+                                            <div class="row">
+                                                <div class="col-xl-4">
+                                                    <!-- Profile picture card-->
+                                                    <div class="card mb-4 mb-xl-0">
+                                                        <div class="card-header">Ảnh đại diện</div>
+                                                        <div class="card-body text-center">
+                                                            <!-- Profile picture image-->
+                                                            <img class="img-account-profile mb-2 img-fluid" id="imagePreviewAdd" src="" alt="" style="width: 250px; height: 250px; object-fit: cover;" />
+
+                                                            <!-- Profile picture help block-->
+                                                            <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
+                                                            <!-- Profile picture upload button-->
+                                                            <input type="file" class="form-control d-none" id="fileInputImageAdd" accept="image/*">
+                                                            <button class="btn btn-primary" type="button" onclick="UploadAvatar()">Tải lên ảnh mới</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-8">
+                                                    <!-- Account details card-->
+                                                    <div class="card mb-4">
+                                                        <div class="card-header">Thông tin đối tác</div>
+                                                        <div class="card-body">
+
+                                                            <!-- Form Group (username)-->
+                                                            <div class="mb-3">
+                                                                <label class="small mb-1" for="partnerName">Tên đối tác</label>
+                                                                <input class="form-control" id="partnerName" type="text" name="partnerName"
+                                                                        placeholder="Nhập tên đối tác" value="" required />
+                                                            </div>
+                                                            <!-- Form Row-->
+                                                            <div class="row gx-3 mb-3">
+                                                                <!-- Form Group (first name)-->
+                                                                <div class="col-md-6">
+                                                                    <label class="small mb-1" for="partnerEmail">Email</label>
+                                                                    <input class="form-control" id="partnerEmail" type="text" name="partnerEmail"
+                                                                            placeholder="Nhập email đối tác" value="" required />
+                                                                </div>
+                                                                <!-- Form Group (last name)-->
+                                                                <div class="col-md-6">
+
+
+                                                                    <label for="partnerCountry">Quốc gia</label>
+                                                                    <select class="form-select" id="partnerCountry" name="partnerCountry">
+                                                                        <option selected disabled value="">Chọn quốc gia:</option>
+                                                                        @foreach (Country item in listCountry)
+                                                                        {
+                                                                            <option value="@item.IsoCode">@item.Name</option>
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <!-- Form Row-->
+                                                            <div class="row gx-3 mb-3">
+                                                                <!-- Form Group (first name)-->
+                                                                <div class="col-md-6">
+                                                                    <label class="small mb-1" for="partnerAddress">Địa chỉ</label>
+                                                                    <input class="form-control" id="partnerAddress" type="text" name="partnerAddress"
+                                                                            placeholder="Nhập địa chỉ đối tác" value="" required />
+                                                                </div>
+                                                                <!-- Form Group (last name)-->
+                                                                <div class="col-md-6">
+                                                                    <label class="small mb-1" for="partnerWebsite">Website</label>
+                                                                    <input class="form-control" id="partnerWebsite" type="text" name="partnerWebsite"
+                                                                            placeholder="Nhập website đối tác nếu có" value="" />
+                                                                </div>
+                                                            </div>
+                                                            <!-- Form Row        -->
+                                                            <div class="row gx-3 mb-3">
+                                                                <!-- Form Group (organization name)-->
+                                                                <div class="col-md-6">
+                                                                    <label class="small mb-1" for="partnerPhone">Số điện thoại</label>
+                                                                    <input class="form-control" id="partnerPhone" type="tel" name="partnerPhone" placeholder="Nhập số điện thoại đối tác" value="" />
+                                                                </div>
+                                                                <!-- Form Group (location)-->
+                                                                <div class="col-md-6">
+                                                                    <label for="exampleFormControlSelect1">Người phụ trách</label>
+                                                                    <select class="form-select" id="responsibleUsr" name="responsibleUsr">
+                                                                        <option selected disabled value="">Chọn người phụ trách đối tác:</option>
+                                                                        @if (listAccManage != null && listAccManage.Count > 0)
+                                                                        {
+                                                                            foreach (UsrAccount usr in listAccManage)
+                                                                            {
+                                                                                <option value="@usr.UserId">@usr.UserName</option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row gx-3">
+                                                                <div class="col-md-6 mb-md-0">
+                                                                    <label class="small mb-1">Ngày bắt đầu</label>
+                                                                    <input class="form-control" name="StartDate" id="StartDate" type="date" value="" required />
+                                                                </div>
+
+                                                            </div>
+                                                            <div class="row gx-3 mt-3">
+
+                                                                <label for="" class="mb-1">Mô tả</label>
+                                                                <textarea class="form-control" name="Description" id="Description" style="min-height: 200px;" placeholder="Nhập mô tả đối tác"></textarea>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr class="my-4" />
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Wizard tab pane item 2-->
+                                <div class="tab-pane fade" id="wizard2" role="tabpanel" aria-labelledby="wizard2-tab">
+                                    <div class="row justify-content-center">
+                                        <div class="col-xxl-10 col-xl-12">
+
+
+                                            <div id="contact">
+                                                <p>Liên hệ </p>
+                                                <div id="inputContact">
+                                                    <div class="row gx-3">
+                                                        <div class="mb-3 col-md-6">
+                                                            <label class="small mb-1" for="nameContact">Tên liên hệ</label>
+                                                            <input class="form-control" id="nameContact" type="text" placeholder="" value="" />
+                                                        </div>
+                                                        <div class="mb-3 col-md-6">
+                                                            <label class="small mb-1" for="titileContact">Chức vụ</label>
+                                                            <input class="form-control" id="titleContact" type="text" placeholder="" value="" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="row gx-3">
+                                                        <div class="mb-3 col-md-6">
+                                                            <label class="small mb-1" for="emailContact">Email</label>
+                                                            <input class="form-control" id="emailContact" type="text" placeholder="" value="" />
+                                                        </div>
+                                                        <div class="mb-3 col-md-6">
+                                                            <label class="small mb-1" for="levelContact">Cấp độ quản lý</label>
+                                                            <select class="form-select" id="levelContact" name="partnercountry">
+                                                            <option value="" disabled selected>Chọn cấp độ: </option>
+                                                                <option value="1">Chịu trách nhiệm chính</option>
+                                                                <option value="2">Quản lý</option>
+                                                                <option value="3">Liên lạc</option>
+                                                                <option value="4">Khác</option>
+
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row gx-3 mb-4">
+                                                        <div class="mb-3 col-md-4">
+                                                            <label class="small mb-1" for="fb">Facebook</label>
+                                                            <input class="form-control" id="fb" type="text" placeholder="" value="" />
+                                                        </div>
+                                                        <div class="mb-3 col-md-4">
+                                                            <label class="small mb-1" for="Twitter">Twitter</label>
+                                                            <input class="form-control" id="Twitter" type="text" placeholder="" value="" />
+                                                        </div>
+                                                        <div class="mb-3 col-md-4">
+                                                            <label class="small mb-1" for="Linkdln">Linkdln</label>
+                                                            <input class="form-control" id="Linkdln" type="text" placeholder="" value="" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12  d-flex justify-content-end" id="save">
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <button id="contactForm" type="button" class="btn btn-outline-success mb-5">Thêm liên hệ</button>
+                                                </div>
+                                                <div class="col-md-6  d-flex justify-content-end" id="save">
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <ul id="contactPartnerList"></ul>
+
+                                            <hr class="my-4" />
+                                            <input type="hidden" id="listContact" name="listContact" value="" />
+                                            <div class="d-flex justify-content-end">
+                                                <button class="btn btn-primary" type="button" onclick="AddNewPartner()">Thêm mới đối tác</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+            </main>
+            @Html.Partial("_Footer")
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="/js/scripts.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+    const fileInputImgAdd = document.getElementById('fileInputImageAdd');
+    const imagePreviewAdd = document.getElementById('imagePreviewAdd');
+
+    fileInputImgAdd.addEventListener('change', async function () {
+        const file = fileInputImgAdd.files[0];
+        if (file) {
+            if (!await validateFile(file)) {
+                imagePreviewAdd.src = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                imagePreviewAdd.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+        }
+    });
+
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+
+    async function validateFile(file) {
+        if (validImageTypes.indexOf(file.type) === -1) {
+            await showAlert("Vui lòng chỉ chọn tệp hình ảnh (jpeg, png, gif, svg hoặc webp).", "warning");
+            return false;
+        }
+        return true;
+    }
+
+    function UploadAvatar() {
+        const fileInputImageAdd = document.getElementById('fileInputImageAdd');
+        fileInputImageAdd.click();
+    }
+      
+    const contactForm = document.getElementById("contactForm");
+    const contactPartnerList = document.getElementById("contactPartnerList");
+    var count = 0;
+    var contactInfo = [];
+    let contactIdCounter = 1;
+
+    contactForm.addEventListener("click", (event) => {
+
+        if (!checkValidateContact()) {
+            return;
+        }
+
+        event.preventDefault();
+        const nameInput = document.getElementById("nameContact"); const name = nameInput.value;
+        const titleInput = document.getElementById("titleContact"); const title = titleInput.value;
+        const emailInput = document.getElementById("emailContact"); const email = emailInput.value;
+        const levellInput = document.getElementById("levelContact"); const level = levellInput.value;
+        const fbInput = document.getElementById("fb"); const fb = fbInput.value;
+        const twitterInput = document.getElementById("Twitter"); const twitter = twitterInput.value;
+        const linkdlnInput = document.getElementById("Linkdln"); const linkdln = linkdlnInput.value;
+
+
+        if (name.trim() !== "") {
+            const id = contactIdCounter++; // Tạo ID mới
+            var newContact = {cid: id, cname: name, ctitle: title, cemail: email, clevel: level, cfb: fb, ctwitter: twitter, clinkdln: linkdln};           
+            contactInfo.push(newContact);
+            document.getElementById("listContact").value = JSON.stringify(contactInfo);
+            addcontactPartnerToList(id, name, title, email, level, fb, twitter, linkdln);
+            nameInput.value = " ";
+            titleInput.value = " ";
+            emailInput.value = " ";
+            levellInput.value = " ";
+            fbInput.value = " ";
+            twitterInput.value = " ";
+            linkdlnInput.value = " ";
+               
+            
+        }
+           
+            
+    });
+
+    function checkValidateContact() {
+        const nameInput = document.getElementById("nameContact"); const name = nameInput.value;
+        const titleInput = document.getElementById("titleContact"); const title = titleInput.value;
+        const emailInput = document.getElementById("emailContact"); const email = emailInput.value;
+        const levellInput = document.getElementById("levelContact"); const level = levellInput.value;
+
+        if (!name || name.trim() == '') {
+            showAlert('Vui lòng nhập tên người liên hệ', 'warning');
+            return false;
+        }
+            if (!title || title.trim() == '') {
+            showAlert('Vui lòng nhập chức vụ của người liên hệ', 'warning');
+            return false;
+        }
+        if (!email || email.trim() == '') {
+            showAlert('Vui lòng nhập email người liên hệ', 'warning');
+            return false;
+        }
+        if (!level || level.trim() == '') {
+            showAlert('Vui lòng nhập cấp độ quản lý của người liên hệ', 'warning');
+            return false;
+        }
+        return true;
+    }
+
+    contactPartnerList.addEventListener("click", (event) => {
+        if (event.target.classList.contains("delete-btn")) {
+            const listItem = event.target.closest("li");
+
+            const contactId = parseInt(listItem.getAttribute("cid"));
+            const index = contactInfo.findIndex(contact => contact.cid === contactId);
+                
+            if(index !== -1) {
+                contactInfo.splice(index, 1);
+                listItem.remove();
+                document.getElementById("listContact").value = JSON.stringify(contactInfo);
+            }
+               
+        } else if (event.target.classList.contains("edit-btn")) { 
+            const listItem = event.target.closest("li");
+            const name = listItem.querySelector("#nameContact");
+            const contactId = parseInt(listItem.getAttribute("cid"));
+            const index = contactInfo.findIndex(contact => contact.cid === contactId);
+            if(index !== -1) {
+                const contact = contactInfo[index];
+                document.getElementById("nameContact").value = listItem.querySelector("#nameContact").textContent;
+                document.getElementById("titleContact").value = listItem.querySelector("#titleContact").textContent;
+                document.getElementById("emailContact").value = listItem.querySelector("#emailContact").textContent;
+                document.getElementById("levelContact").value = listItem.querySelector("#levelContact").textContent;
+                document.getElementById("fb").value = listItem.querySelector("#fb").textContent;
+                document.getElementById("Twitter").value = listItem.querySelector("#Twitter").textContent;
+                document.getElementById("Linkdln").value = listItem.querySelector("#Linkdln").textContent;
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+                document.getElementById("save").innerHTML = '<button id="save-btn"   type="button" class="btn btn-primary mx-5 save-btn mb-5">Lưu</button>';
+                document.getElementById('contactForm').classList.add("d-none");
+
+
+                document.getElementById("save-btn").addEventListener("click", (event) => {
+
+                    listItem.querySelector("#nameContact").textContent = document.getElementById("nameContact").value;
+                    listItem.querySelector("#titleContact").textContent = document.getElementById("titleContact").value;
+                    listItem.querySelector("#emailContact").textContent = document.getElementById("emailContact").value;
+                    listItem.querySelector("#levelContact").textContent = document.getElementById("levelContact").value;
+                    listItem.querySelector("#fb").textContent = document.getElementById("fb").value;
+                    listItem.querySelector("#Twitter").textContent = document.getElementById("Twitter").value;
+                    listItem.querySelector("#Linkdln").textContent = document.getElementById("Linkdln").value;
+                    contact.cname = document.getElementById("nameContact").value;
+                    contact.ctitle = document.getElementById("titleContact").value;
+                    contact.cemail = document.getElementById("emailContact").value;
+                    contact.clevel = document.getElementById("levelContact").value;
+                    contact.cfb = document.getElementById("fb").value;
+                    contact.ctwitter = document.getElementById("Twitter").value;
+                    contact.clinkdln = document.getElementById("Linkdln").value;
+
+                    document.getElementById("nameContact").value = "";
+                    document.getElementById("titleContact").value = "";
+                    document.getElementById("emailContact").value = "";
+                    document.getElementById("levelContact").value = "";
+                    document.getElementById("fb").value = "";
+                    document.getElementById("Twitter").value = "";
+                    document.getElementById("Linkdln").value = "";
+
+                    document.getElementById("save-btn").remove();
+                    document.getElementById('contactForm').classList.remove("d-none");
+                    document.getElementById("listContact").value = JSON.stringify(contactInfo);
+                })
+            }
+                
+
+        }
+
+
+    });
+       
+    function addcontactPartnerToList(id, name, title, email, level, fb, twitter, linkdln) {
+        
+        var levelName = "";
+        if (level == '1') {
+            levelName = "Chịu trách nhiệm chính";
+        } else if (level == '2') {
+            levelName = "Quản lý";
+        } else if (level == '3') {
+            levelName = " Liên lạc";
+        } else {
+            levelName = "Khác";
+        }
+
+        listItem = document.createElement("li");
+        listItem.setAttribute("cid", id);
+        listItem.innerHTML = `
+                <div id="inputContact " class="border border-dark p-4 rounded-3 mb-5">
+                    <div class="row gx-3">
+                        <div class="mb-2 col-md-6">
+                            <label class="small mb-1" for="nameContact">Tên liên hệ : </label>
+                                    <label class="small mb-1" id="nameContact" name="nameContact" >${name}</label>
+
+                        </div>
+                        <div class="mb-2 col-md-6">
+                            <label class="small mb-1" for="titileContact">Chức vụ : </label>
+                                            <label class="small mb-1" id="titleContact" name="titleContact">${title}</label>
+                        </div>
+                    </div>
+                    <div class="row gx-3">
+                        <div class="mb-2 col-md-6">
+                            <label class="small mb-1" for="emailContact">Email : </label>
+                                            <label class="small mb-1" id="emailContact" name="emailContact" >${email}</label>
+                        </div>
+                        <div class="mb-2 col-md-6">
+                                    <label class="small mb-1" for="levelContact">Cấp độ quản lý : </label>
+                                            <label class="small mb-1" id="levelContact" name="levelContact">${levelName}</label>
+                        </div>
+                    </div>
+                    <div class="row gx-3 mb-4">
+                        <div class="mb-2 col-md-4">
+                            <label class="small mb-1" for="fb">Facebook : </label>
+                                            <label class="small mb-1" id="fb" name="facebook">${fb}</label>
+                        </div>
+                        <div class="mb-2 col-md-4">
+                            <label class="small mb-1" for="Twitter">Twitter : </label>
+                                            <label class="small mb-1" id="Twitter" name="Twitter" >${twitter}</label>
+                        </div>
+                        <div class="mb-2 col-md-4">
+                            <label class="small mb-1" for="Linkdln">Linkdln : </label>
+                                            <label class="small mb-1" id="Linkdln" name="Linkdln">${linkdln}</label>
+                        </div>
+                    </div>
+                                   
+                    <button type="button" class=" btn btn-danger delete-btn ">Xóa</button>
+                    <button type="button" class="btn btn-primary edit-btn ">Sửa</button>
+                </div>
+                `;
+        contactPartnerList.appendChild(listItem);
+           
+    }
+
+    function AddNewPartner() {
+
+        if(!ValidateAddPartner()) {
+            return;
+        }
+
+        var image = $('#fileInputImageAdd')[0].files[0];
+        var partnerName = $('#partnerName').val();
+        var partnerEmail = $('#partnerEmail').val();
+        var partnerCountry = $('#partnerCountry').val();
+        var partnerAddress = $('#partnerAddress').val();
+        var partnerWebsite = $('#partnerWebsite').val();
+        var partnerPhone = $('#partnerPhone').val();
+        var responsibleUsr = $('#responsibleUsr').val();
+        var StartDate = $('#StartDate').val();
+        var Description = $('#Description').val();
+        var listContact = $('#listContact').val();
+
+        var formData = new FormData();
+
+        formData.append("partnername",partnerName);
+        formData.append("uploadedImage", image);
+        formData.append("partneremail", partnerEmail);
+        formData.append("partnercountry", partnerCountry);
+        formData.append("partneraddress", partnerAddress);
+        formData.append("partnerwebsite", partnerWebsite);
+        formData.append("partnerphone", partnerPhone);
+        formData.append("resuser", responsibleUsr);
+        formData.append("desc", Description);
+        formData.append("startdate", StartDate);
+        formData.append("listContact", listContact);
+
+        $.ajax({
+            url: "/Partner/DoAdd",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: async function (data) {
+                if (data.success) {
+                    await showAlert('Thêm mới đối tác thành công', "success");
+                    setTimeout(function () {
+                            window.location.href = "/Partner/ManagePartner";
+                    }, 2000);
+                } else {
+                    await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+                }
+            },
+            error: async function (xhr, status, error) {
+                await showAlert("Đã có lỗi xảy ra vui lòng thử lại hoặc liên hệ với quản trị viên.", "error");
+            }
+        });
+
+    }
+
+    function ValidateAddPartner() {
+
+        var image = $('#fileInputImageAdd')[0].files[0];
+        var partnerName = $('#partnerName').val();
+        var partnerEmail = $('#partnerEmail').val();
+        var partnerCountry = $('#partnerCountry').val();
+        var partnerAddress = $('#partnerAddress').val();
+        var partnerWebsite = $('#partnerWebsite').val();
+        var partnerPhone = $('#partnerPhone').val();
+        var responsibleUsr = $('#responsibleUsr').val();
+        var StartDate = $('#StartDate').val();
+        var Description = $('#Description').val();
+        var listContact = $('#listContact').val();
+
+        if (!image || image.lenght <= 0) {
+            showAlert('Vui lòng tải lên ảnh của đối tác', 'warning');
+            return false;
+        }
+
+        if (!partnerName || partnerName.trim() == '') {
+            showAlert('Vui lòng nhập tên đối tác', 'warning');
+            return false;
+        }
+
+        if (!partnerEmail || partnerEmail.trim() == '') {
+            showAlert('Vui lòng nhập email đối tác', 'warning');
+            return false;
+        }
+
+        if (!partnerCountry || partnerCountry.trim() == '') {
+            showAlert('Vui lòng chọn quốc gia của đối tác', 'warning');
+            return false;
+        }
+
+        if (!partnerAddress || partnerAddress.trim() == '') {
+            showAlert('Vui lòng nhập địa chỉ của đối tác', 'warning');
+            return false;
+        }
+
+        if (!StartDate || StartDate.trim() == '') {
+            showAlert('Vui lòng chọn ngày bắt đầu hợp tác với đối tác', 'warning');
+            return false;
+        }
+
+        if (!responsibleUsr || responsibleUsr.trim() == '') {
+            showAlert('Vui lòng chọn người phụ trách đối tác', 'warning');
+            return false;
+        }
+
+        if (!listContact || listContact.trim() == '') {
+            showAlert('Vui lòng thêm người liên hệ của đối tác', 'warning');
+            return false;
+        }
+
+        return true;
+    }
+
+
+</script>
+</body>
+</html>
